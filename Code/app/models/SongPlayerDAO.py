@@ -1,5 +1,6 @@
 import sqlite3
 from app import app
+import subprocess
 from app.models.SongPlayer import SongPlayer
 from app.models.SongPlayerDAOInterface import SongPlayerDAOInterface
 
@@ -14,17 +15,41 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         conn.row_factory = sqlite3.Row
         return conn
 
-    def createDevice(self, name_place, ip_address, state, place_address, place_postcode, place_city, place_building_name, device_name, orga_id) -> None:
-        """ Create a new song player in the database. """
+    def findDevices(self) -> None:
+        """ Reach any devices through tailscale. """
         conn = self._getDbConnection()
         try:
-            query = '''
-            INSERT INTO song_player
-            (name_place, IP_adress, state, last_synchronization, place_adress, place_postcode, place_city, place_building_name, device_name, id_orga)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-            '''
-            conn.execute(query, (name_place, ip_address, state, place_address, place_postcode, place_city, place_building_name, device_name, orga_id))
-            conn.commit()
+            players = {}
+            cmd = subprocess.run(["tailscale","status","--json"],capture_output=True,text=True)
+            data = json.loads(cmd.stdout)
+            for peer in date['Peer'].values():
+                name = peer['HostName'].split('-')[0]
+                ip = peer['TailscalesIPs'][0]
+
+                if name not in players:
+                    players[name] = { 
+                                     "name": name,
+                                     "ip": ip,
+                                     "ville": None,
+                                     "orga": None}
+            for player in players:
+                if player['ville'] is None:
+                    res = requests.get(f"ipinfo.io/{player[ip]}")
+                    loc_data = res.json()
+                    player["ville"] = loc_data["city"]
+                    player["orga"] = loc_date["org"]
+
+                query = '''
+                INSERT INTO song_player
+                (name_place, IP_adress, state, last_synchronization, id_orga)
+                VALUES (?,?,"OK",CURRENT_TIMESTAMP,?);
+
+                INSERT INTO localisation (city) VALUES (?);
+
+
+                '''
+                conn.execute(query, (player['name'],player['ip'],player['orga'],player['ville']))
+                conn.commit()
         except Exception as e:
             conn.rollback()
             raise e
