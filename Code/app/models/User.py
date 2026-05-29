@@ -5,10 +5,12 @@ class SQLValue(TypedDict):
     username: str
     password: str
     role: str
+    email: str
 
-class User : 
-    def __init__(self, dico: Dict[str, SQLValue]) -> None :
+class User:
+    def __init__(self, dico: Dict[str, SQLValue]) -> None:
         self.id_user = dico['id_user']
         self.username = dico['username']
         self.password = dico['password']
         self.role = dico['role']
+        self.email = dico['email']

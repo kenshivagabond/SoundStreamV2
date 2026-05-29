@@ -114,7 +114,7 @@ class UserController :
             username = request.form.get('username')
             password = request.form.get('password')
             role = request.form.get('role')
-
+            email = request.form.get('email') 
 
             # Récupérer l'organisation pour redirection et association au nouvel utilisateur
             orga_name = session.get('organisation_name')
@@ -129,6 +129,8 @@ class UserController :
             
             # Création de l'utilisateur
             us.udao.createUser(username, password, role, orga_name)
+            us.updateEmail(username, email)  # ← NOUVEAU
+
             # Create the log and insert it in the database
             orga_id = ogs.getIdByName(orga_name)
             log.ldao.createLog("ADD", f"l'utilisateur {username} a été implémenté dans la base de données.",
@@ -159,23 +161,23 @@ class UserController :
     def forgotten():
         metadata = {'title': 'Forgotten Password'}
         if request.method == 'POST':
-            list_users = us.findAllUsername()
-            username = request.form['username']
+            email = request.form.get('email')
+            user = us.findByEmail(email)
 
-            ticket = request.form['email_contains']
+            if user:
+                # Générer un nouveau mot de passe aléatoire
+                import random, string
+                new_password = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
 
-            # Add username if exists to help admin identify the user and reset the password faster
-            if username in list_users:
-                ticket +=f" - username : {username}"
+                # Changer le mot de passe en BDD
+                us.changePassword(user.username, new_password)
+
+                # Envoyer le mail
+                from app.services.EmailService import send_reset_email
+                send_reset_email(email, user.username, new_password)
+
+                return render_template('forgotten.html', metadata=metadata, success="Un nouveau mot de passe a été envoyé à votre adresse mail.")
             else:
-                ticket += " - No user found with this username."
-            
-            orga_id = 0 # We don't need orga_id for this log
-            
-            log.ldao.createLog("TICKET", ticket, datetime.datetime.now(), orga_id)
-            
-            return redirect(url_for('login'))
-        
-        else:
-            metadata = {'title': 'Forgotten Password'}
-            return render_template('forgotten.html', metadata=metadata)
+                return render_template('forgotten.html', metadata=metadata, error="Aucun compte trouvé avec cet email.")
+
+        return render_template('forgotten.html', metadata=metadata)

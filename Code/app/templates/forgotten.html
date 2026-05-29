@@ -1,46 +1,41 @@
 {% extends 'layout.html' %}
 {% block content %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/devices.css') }}"> 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/devices.css') }}">
 
 <div class="devices">
-    
     <div class="bento">
         <div class="divider colored" style="padding: 4vh;">
-            <h1>Forgotten Password</h1>
-            
+            <h1>Mot de passe oublié</h1>
+
             <form method="POST" style="max-width: 600px; margin: 2vh auto;">
-                
-                <!-- Champ Nom d'utilisateur -->
+
                 <div style="margin-bottom: 2vh;">
-                    <label for="username" style="display: block; margin-bottom: 0.5vh; color: white;">
-                        Username :
+                    <label for="email" style="display: block; margin-bottom: 0.5vh; color: white;">
+                        Votre adresse email :
                     </label>
-                    <input type="text" id="username" name="username" style="width:100%; padding:1vh; border-radius:5px; border:1px solid #ccc; background: rgba(255,255,255,0.1); color: white;">
-                    <small style="color: #aaa; font-size: 0.9em;">Mettez votre nom d'utilisateur</small>
+                    <input type="email" id="email" name="email" required
+                        style="width:100%; padding:1vh; border-radius:5px; border:1px solid #ccc; background: rgba(255,255,255,0.1); color: white;">
+                    <small style="color: #aaa;">Un nouveau mot de passe vous sera envoyé par mail</small>
                 </div>
-                
-                <!-- Champ Rôle -->
-                <div style="margin-bottom: 2vh;">
-                    <label for="email_contains" style="display:block; margin-bottom:0.5vh; color:white;">
-                        Email Content :
-                    </label>
-                    <input type="text" id="email_contains" name="email_contains" style="width:100%; padding:1vh; border-radius:5px; border:1px solid #ccc; background: rgba(255,255,255,0.1); color: white;">
-                    <small style="color: #aaa; font-size: 0.9em;">Donnez votre nouveau mot de passe et expliquez pourquoi vous souhaitez réinitialiser votre mot de passe</small>
-                </div>
-                
-                <!-- Boutons -->
+
+                {% if error %}
+                    <p style="color: red;">{{ error }}</p>
+                {% endif %}
+                {% if success %}
+                    <p style="color: #00FF44;">{{ success }}</p>
+                {% endif %}
+
                 <div style="display: flex; gap: 2vh; justify-content: center; margin-top: 3vh;">
-                    <a href="{{ url_for('login') }}" class="custom-btn btn-yellow" style="background-color: #ffee00; color: black; padding: 1.2vh 3.5vh; border: none;">Annuler</a>
-                    
-                    <button type="submit" class="custom-btn" 
-                            style="background-color:#00FF44; color: black; padding: 1.2vh 3.5vh; ">
-                        Send
+                    <a href="{{ url_for('login') }}" class="custom-btn btn-yellow"
+                        style="background-color: #ffee00; color: black; padding: 1.2vh 3.5vh;">Annuler</a>
+                    <button type="submit" class="custom-btn"
+                        style="background-color:#00FF44; color: black; padding: 1.2vh 3.5vh;">
+                        Envoyer
                     </button>
                 </div>
-                
+
             </form>
-            
         </div>
     </div>
 </div>

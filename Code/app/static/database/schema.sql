@@ -61,9 +61,11 @@ CREATE TABLE IF NOT EXISTS type_file(
 CREATE TABLE IF NOT EXISTS user_(
    id_user INTEGER PRIMARY KEY,
    username VARCHAR(25) NOT NULL,
+   email VARCHAR(50) NOT NULL,
    password TEXT NOT NULL,
    role TEXT NOT NULL,
    UNIQUE(username),
+   UNIQUE(email),
    FOREIGN KEY(role) REFERENCES role(role)
 );
 
