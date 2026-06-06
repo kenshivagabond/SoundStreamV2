@@ -1,5 +1,6 @@
 import sqlite3
 from app import app
+import requests
 import subprocess
 from ping3 import ping, verbose_ping
 import json
@@ -36,17 +37,17 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
                                      "orga": None}
             for player in players.values():
                 if player['ville'] is None:
-                    res = requests.get(f"ipinfo.io/{player[ip]}")
+                    res = requests.get(f"https://ipinfo.io/{player['ip']}")
                     loc_data = res.json()
-                    player["ville"] = loc_data["city"]
-                    player["orga"] = loc_data["org"]
+                    player["city"] = loc_data["city"]
+                    player["orga"] = 1
 
                 query_player = """
-                INSERT INTO song_player
+                INSERT OR IGNORE  INTO song_player
                 (name_place, IP_adress, state, last_synchronization, id_orga)
                 VALUES (?,?,"OK",CURRENT_TIMESTAMP,?);"""
 
-                query_loc = """INSERT INTO localisation (city) VALUES (?);"""
+                query_loc = """INSERT OR IGNORE INTO localisation (city) VALUES (?);"""
 
                 conn.execute(query_player, (player['name'],player['ip'],player['orga'],player['ville']))
                 conn.execute(query_loc,player["ville"])
@@ -57,53 +58,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         finally:
             conn.close()
 
-    def addSongPlayerInDb(self, data_form_to_form) -> None:
-        """ Add a new song player to the database. """
-        conn = self._getDbConnection()
-        try:
-            query = '''
-            INSERT INTO song_player
-            (name_place, ip_address, state, last_synchronization, place_address, place_city, place_postcode, place_building_name, device_name, id_orga)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-            '''
-            conn.execute(query, data_form_to_form)
-            conn.commit()
-        except Exception as e:
-            conn.rollback()
-            raise e
-        finally:
-            conn.close()
-
-    def updateDbSongPlayer(self, form_data, id_player) -> None:
-        """ Update a song player in the database. """
-        # Get a database connection
-        conn = self._getDbConnection()
-
-        #Get all key from the form
-        updated_columns=list(form_data.keys())
-
-        # Get all values from the form
-        values = list(form_data.values())
-
-        # Create the SQL update query
-        # Each column uses "column = ?" to protect against SQL injection
-        set_clause = ', '.join([f'{col} = ?' for col in updated_columns])
-        requete = f"UPDATE song_player SET {set_clause} WHERE id_player = ?"
-        # Execute the query with parameters
-        # Using "?" protects the query from SQL injection
-        conn.execute(requete, tuple(values) + (id_player,))
-
-        # Save changes to the database
-        conn.commit()
-
-    def deleteSongPlayerInDb(self,id_song_player) -> None:
-        """ Delete a song player to the database """
-        conn = self._getDbConnection()
-
-        requete = '''DELETE FROM song_player WHERE id_player = ?'''
-        conn.execute(requete,(id_song_player,))
-
-        conn.commit()
+    
 
     def findByID(self, id_player) -> SongPlayer:
         """ Get song player by the id of the song player """
@@ -142,20 +97,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
             return songplayerList
         return []
 
-    def findAllByOrganisationInBd(self, id_orga) -> list:
-        """
-        LA TCHIM C PAS EN DOUBLE CA ?
-        """
-        conn = self._getDbConnection()
-        songplayers = conn.execute("""SELECT * FROM song_player WHERE id_orga = ?;""", (id_orga,)).fetchall()
-        songplayerList = list()
-        for songplayer in songplayers :
-            songplayerList.append(SongPlayer(dict(songplayer)))
-        conn.close()
-
-        if songplayerList :
-            return songplayerList
-        return []
+    
 
     def findAllByOrganisationAndStatus(self, id_orga, status) -> list:
         """ find all song players by organisation and status """
@@ -205,7 +147,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         """ Really updates player states (via ping) """
         conn = self._getDbConnection()
         if ping(ip) != None:
-            conn.execute('UPDATE song_player SET state = OK WHERE ip =  ?;', (ip))
+            conn.execute('UPDATE song_player SET state = ONLINE WHERE ip =  ?;', (ip))
         conn.commit()
         conn.close()
 
@@ -219,3 +161,4 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
 
         conn.close()
         return players_online_list
+ 
