@@ -3,6 +3,7 @@ from app import app
 import requests
 import subprocess
 from ping3 import ping, verbose_ping
+import paramiko
 import json
 from app.models.SongPlayer import SongPlayer
 from app.models.SongPlayerDAOInterface import SongPlayerDAOInterface
@@ -18,9 +19,37 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         conn.row_factory = sqlite3.Row
         return conn
 
+
+    def sshForMultiThread(self,player:dict) -> dict:
+        """Utilise pour findDevices on fait du multi thread donc asynchrone on veut pas vérifier une machine une à une trop long """
+        try :
+            ssh = paramiko.SSHClient()
+            # se connecter malgré tout
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.connect(hostname=player['ip'],
+            username='kenshi', # admettons pour l'instant que toutes les machines ont kenshi pour nom d'utilisateur
+            timeout=5)
+            stdin, stdout, stderr = ssh.exec_command("curl -s https://api.ipify.org")
+            public_ip = stdout.read().decode('utf-8').strip()
+            res = requests.get(f"https://ipinfo.io/{public_ip}")
+            loc_data = res.json()
+            player["ville"] = loc_data["city"]
+            player["orga"] = 1
+            ssh.close()
+
+            return player
+        except Exception as e: # le except à vraiment plus d'utilité qu'un excpet normal si une machine répond pas le processus marche malgré cela
+            print(f"sa n'à pas marcher pour {player['ip']}'")
+
+        return player
+
+
+
+
     def findDevices(self) -> None:
         """ Reach any devices through tailscale. """
         conn = self._getDbConnection()
+
         try:
             players = {}
             cmd = subprocess.run(["tailscale","status","--json"],capture_output=True,text=True)
@@ -35,12 +64,10 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
                                      "ip": ip,
                                      "ville": None,
                                      "orga": None}
-            for player in players.values():
-                if player['ville'] is None:
-                    res = requests.get(f"https://ipinfo.io/{player['ip']}")
-                    loc_data = res.json()
-                    player["city"] = loc_data["city"]
-                    player["orga"] = 1
+
+            with ThreadPoolExecutor(max_workers=10) as executor:
+                updated_players = list(executor.map(self.sshForMultiThread, players.values()))
+
 
                 query_player = """
                 INSERT OR IGNORE  INTO song_player
@@ -49,9 +76,19 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
 
                 query_loc = """INSERT OR IGNORE INTO localisation (city) VALUES (?);"""
 
-                conn.execute(query_player, (player['name'],player['ip'],player['orga'],player['ville']))
-                conn.execute(query_loc,player["ville"])
-                conn.commit()
+                for player in updated_players:
+                    conn.execute(
+                        query_player,
+                        (
+                            player["name"],
+                            player["ip"],
+                            player["orga"],
+                        ),
+                    )
+                    conn.execute(query_loc, (player["ville"],))
+
+            conn.commit()
+
         except Exception as e:
             conn.rollback()
             raise e
