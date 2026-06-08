@@ -20,8 +20,8 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         try:
             query = '''
             INSERT INTO song_player
-            (name_place, IP_adress, state, last_synchronization, place_adress, place_postcode, place_city, place_building_name, device_name, id_orga)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            (name_place, IP_adress, player_state, last_synchronization, address_place, postcode_place, city_place, building_name_place, device_name, id_orga)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?);
             '''
             conn.execute(query, (name_place, ip_address, state, place_address, place_postcode, place_city, place_building_name, device_name, orga_id))
             conn.commit()
@@ -37,8 +37,8 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         try:
             query = '''
             INSERT INTO song_player
-            (name_place, ip_address, state, last_synchronization, place_address, place_city, place_postcode, place_building_name, device_name, id_orga)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            (name_place, IP_adress, player_state, last_synchronization, address_place, postcode_place, city_place, building_name_place, device_name, id_orga)
+            VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?);
             '''
             conn.execute(query, data_form_to_form)
             conn.commit()
@@ -106,7 +106,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
     def findByState(self, state) -> SongPlayer:
         """ Get song player by state """
         conn = self._getDbConnection()
-        songplayers = conn.execute('SELECT * FROM song_player WHERE state = ;', (state,)).fetchall()
+        songplayers = conn.execute('SELECT * FROM song_player WHERE player_state = ?;', (state,)).fetchall()
         songplayerList = list()
         for songplayer in songplayers :
             songplayerList.append(SongPlayer(dict(songplayer)))
@@ -135,7 +135,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         """ find all song players by organisation and status """
         conn = self._getDbConnection()
 
-        sql = "SELECT * FROM song_player WHERE id_orga = ? AND state = ?;"
+        sql = "SELECT * FROM song_player WHERE id_orga = ? AND player_state = ?;"
 
         songplayers = conn.execute(sql, (id_orga, status)).fetchall()
 
@@ -163,7 +163,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
     def findAllBuildingNames(self) -> list:
         """Get all distinct building names from the song players."""
         conn = self._getDbConnection()
-        query = "SELECT DISTINCT place_building_name FROM song_player;"
+        query = "SELECT building_name FROM building;"
         cursor = conn.execute(query)
         results_query = cursor.fetchall()
         conn.close()
@@ -171,20 +171,20 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         # Extract building names from the result set
         building_names = []
         for row_query in results_query:
-            building_names.append(row_query['place_building_name'])
+            building_names.append(row_query['building_name'])
 
         return building_names
     
     def UpdateState(self, state, id_player) -> None :
         """ Update the state of a specific song player """
         conn = self._getDbConnection()
-        conn.execute('UPDATE song_player SET state = ? WHERE id_player =  ?;', (state,id_player))
-        conn.commit() 
+        conn.execute('UPDATE song_player SET player_state = ? WHERE id_player =  ?;', (state,id_player))
+        conn.commit()
         conn.close()
 
     def findAllOnlineDevices(self) -> list[SongPlayer]:
         conn = self._getDbConnection()
-        songplayers = conn.execute("SELECT * FROM song_player WHERE state = 'ONLINE';").fetchall()
+        songplayers = conn.execute("SELECT * FROM song_player WHERE player_state = 'ONLINE';").fetchall()
         players_online_list = list()
 
         for songplayer in songplayers :

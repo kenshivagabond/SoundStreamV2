@@ -3,22 +3,23 @@ DROP TABLE IF EXISTS interaction;
 DROP TABLE IF EXISTS composition;
 DROP TABLE IF EXISTS work_link;
 DROP TABLE IF EXISTS log;
-DROP TABLE IF EXISTS file;  
-DROP TABLE IF EXISTS user_;     
-DROP TABLE IF EXISTS song_player;  
+DROP TABLE IF EXISTS file;
+DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS song_player;
 DROP TABLE IF EXISTS playlist;
 DROP TABLE IF EXISTS organisation;
-DROP TABLE IF EXISTS Planning;
+DROP TABLE IF EXISTS planning;
 DROP TABLE IF EXISTS role;
-DROP TABLE IF EXISTS type_file;
+DROP TABLE IF EXISTS forget_password;
+DROP TABLE IF EXISTS building;
 
 CREATE TABLE IF NOT EXISTS playlist(
    id_playlist INTEGER PRIMARY KEY,
-   name TEXT NOT NULL,
+   playlist_name TEXT NOT NULL,
    creation_date DATETIME NOT NULL,
    expiration_date DATETIME NOT NULL,
    last_update_date DATETIME NOT NULL,
-   UNIQUE(name)
+   UNIQUE(playlist_name)
 );
 
 CREATE TABLE IF NOT EXISTS organisation(
@@ -31,21 +32,22 @@ CREATE TABLE IF NOT EXISTS song_player(
    id_player INTEGER PRIMARY KEY,
    name_place TEXT NOT NULL,
    IP_adress TEXT NOT NULL,
-   state VARCHAR(50) NOT NULL,
+   player_state VARCHAR(50) NOT NULL,
    last_synchronization DATETIME,
-   place_adress TEXT NOT NULL,
-   place_postcode  VARCHAR(5) NOT NULL,
-   place_city VARCHAR(50) NOT NULL,
-   place_building_name TEXT,
+   address_place TEXT NOT NULL,
+   postcode_place  VARCHAR(5) NOT NULL,
+   city_place VARCHAR(50) NOT NULL,
+   building_name_place TEXT,
    device_name TEXT NOT NULL,
    id_orga INT NOT NULL,
    UNIQUE(IP_adress),
-   FOREIGN KEY(id_orga) REFERENCES organisation(id_orga)
+   FOREIGN KEY(id_orga) REFERENCES organisation(id_orga),
+   FOREIGN KEY(building_name_place) REFERENCES building(building_name)
 );
 
-CREATE TABLE IF NOT EXISTS Planning(
-   day_ VARCHAR(50),
-   PRIMARY KEY(day_)
+CREATE TABLE IF NOT EXISTS planning(
+   diffusing_day VARCHAR(50),
+   PRIMARY KEY(diffusing_day)
 );
 
 CREATE TABLE IF NOT EXISTS role(
@@ -53,15 +55,16 @@ CREATE TABLE IF NOT EXISTS role(
    description VARCHAR(50) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS type_file(
-   type_file VARCHAR(50),
-   PRIMARY KEY(type_file)
+CREATE TABLE IF NOT EXISTS building(
+   building_name TEXT NOT NULL,
+   UNIQUE(building_name)
 );
 
-CREATE TABLE IF NOT EXISTS user_(
+CREATE TABLE IF NOT EXISTS user(
    id_user INTEGER PRIMARY KEY,
    username VARCHAR(25) NOT NULL,
    email VARCHAR(50) NOT NULL,
+   phone_number VARCHAR(15) NOT NULL,
    password TEXT NOT NULL,
    role TEXT NOT NULL,
    UNIQUE(username),
@@ -80,20 +83,19 @@ CREATE TABLE IF NOT EXISTS log(
 
 CREATE TABLE IF NOT EXISTS file(
    id_file INTEGER PRIMARY KEY,
-   name TEXT NOT NULL,
+   file_name TEXT NOT NULL,
    path TEXT NOT NULL,
    time_length TIME NOT NULL,
    upload_date DATETIME NOT NULL,
    type_file VARCHAR(50) NOT NULL,
-   UNIQUE(name),
-   FOREIGN KEY(type_file) REFERENCES type_file(type_file)
+   UNIQUE(file_name)
 );
 
 CREATE TABLE IF NOT EXISTS work_link(
    id_user INT,
    id_orga INT,
    PRIMARY KEY(id_user, id_orga),
-   FOREIGN KEY(id_user) REFERENCES user_(id_user),
+   FOREIGN KEY(id_user) REFERENCES user(id_user),
    FOREIGN KEY(id_orga) REFERENCES organisation(id_orga)
 );
 
@@ -108,9 +110,10 @@ CREATE TABLE IF NOT EXISTS composition(
 CREATE TABLE IF NOT EXISTS interaction(
    id_playlist INT,
    id_user INT,
+   type_interaction VARCHAR(50) NOT NULL,
    PRIMARY KEY(id_playlist, id_user),
    FOREIGN KEY(id_playlist) REFERENCES playlist(id_playlist),
-   FOREIGN KEY(id_user) REFERENCES user_(id_user)
+   FOREIGN KEY(id_user) REFERENCES user(id_user)
 );
 
 CREATE TABLE IF NOT EXISTS planned(
@@ -119,5 +122,13 @@ CREATE TABLE IF NOT EXISTS planned(
    start_time TIME,
    PRIMARY KEY(id_playlist, day_),
    FOREIGN KEY(id_playlist) REFERENCES playlist(id_playlist),
-   FOREIGN KEY(day_) REFERENCES Planning(day_)
+   FOREIGN KEY(day_) REFERENCES planning(day_)
+);
+
+CREATE TABLE IF NOT EXISTS forget_password(
+   id_user INT PRIMARY KEY,
+   new_password TEXT NOT NULL,
+   forget_state TEXT NOT NULL,
+   date_forget DATETIME NOT NULL,
+   FOREIGN KEY(id_user) REFERENCES user(id_user)
 );

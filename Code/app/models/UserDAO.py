@@ -23,16 +23,16 @@ class UserDAO(UserDAOInterface):
         password_hashed = hashed_bytes.decode('utf-8')
         return password_hashed
     
-    def createUser(self, username, password, role, organisation, email='') -> None:
+    def createUser(self, username, password, role, organisation, email='', phone_number='') -> None:
         """ create a new user """
         if username in self.findUsersInOrganisation(organisation):
             raise ValueError("Username already exists")
         
         conn = self._getDbConnection()
         hashed_password = self._generatePWDHash(password)
-        # ✅ CORRECTION : email ajouté dans l'INSERT (colonne NOT NULL dans le schéma)
-        query = 'INSERT INTO user_ (username, password, role, email) VALUES (?,?,?,?)'
-        conn.execute(query, (username, hashed_password, role, email))
+        # ✅ CORRECTION : email et phone_number ajoutés dans l'INSERT (colonnes NOT NULL dans le schéma)
+        query = 'INSERT INTO user (username, password, role, email, phone_number) VALUES (?,?,?,?,?);'
+        conn.execute(query, (username, hashed_password, role, email, phone_number))
         conn.commit()
         conn.close()
 
@@ -43,7 +43,7 @@ class UserDAO(UserDAOInterface):
         conn = self._getDbConnection()
         query_idUser = """
             SELECT u.id_user
-            FROM user_ u
+            FROM user u
             WHERE u.username = ?
         """
         user_id = conn.execute(query_idUser, (username,)).fetchone()[0]
@@ -69,7 +69,7 @@ class UserDAO(UserDAOInterface):
     def findByUsername(self, username) -> User:
         """ Get user by username """
         conn = self._getDbConnection()
-        res = conn.execute('SELECT * FROM user_ WHERE username = ?', (username,)).fetchone()
+        res = conn.execute('SELECT * FROM user WHERE username = ?', (username,)).fetchone()
         conn.close()
         if res:
             return User(dict(res))
@@ -79,7 +79,7 @@ class UserDAO(UserDAOInterface):
     def findByEmail(self, email) -> 'User':
         """Get user by email"""
         conn = self._getDbConnection()
-        res = conn.execute('SELECT * FROM user_ WHERE email = ?', (email,)).fetchone()
+        res = conn.execute('SELECT * FROM user WHERE email = ?', (email,)).fetchone()
         conn.close()
         if res:
             return User(dict(res))
@@ -89,7 +89,7 @@ class UserDAO(UserDAOInterface):
     def updateEmail(self, username, email) -> None:
         """Update user email"""
         conn = self._getDbConnection()
-        conn.execute('UPDATE user_ SET email = ? WHERE username = ?', (email, username))
+        conn.execute('UPDATE user SET email = ? WHERE username = ?', (email, username))
         conn.commit()
         conn.close()
     
@@ -98,7 +98,7 @@ class UserDAO(UserDAOInterface):
         conn = self._getDbConnection()
         query = """
             SELECT u.username
-            FROM user_ u
+            FROM user u
             JOIN work_link w ON u.id_user = w.id_user
             JOIN organisation o ON w.id_orga = o.id_orga
             WHERE o.name_orga = ?
@@ -120,7 +120,7 @@ class UserDAO(UserDAOInterface):
         """Change the password of the user"""
         conn = self._getDbConnection()
         hashed_password = self._generatePWDHash(password)
-        query = 'UPDATE user_ SET password = ? WHERE username = ?'
+        query = 'UPDATE user SET password = ? WHERE username = ?'
         conn.execute(query, (hashed_password, username))
         conn.commit()
         conn.close()
@@ -128,10 +128,10 @@ class UserDAO(UserDAOInterface):
     def deleteByUsername(self, username) -> None:
         """ Delete a user by username """ 
         conn = self._getDbConnection()
-        query = 'DELETE FROM work_link WHERE id_user = (SELECT id_user FROM user_ WHERE username = ?)'
+        query = 'DELETE FROM work_link WHERE id_user = (SELECT id_user FROM user WHERE username = ?)'
         conn.execute(query, (username,))
         conn.commit()
-        query = 'DELETE FROM user_ WHERE username = ?'
+        query = 'DELETE FROM user WHERE username = ?'
         conn.execute(query, (username,))
         conn.commit()
         conn.close()
@@ -139,7 +139,7 @@ class UserDAO(UserDAOInterface):
     def updateUserRole(self, username, new_role) -> None:
         """Update user role"""
         conn = self._getDbConnection()
-        query = 'UPDATE user_ SET role = ? WHERE username = ?'
+        query = 'UPDATE user SET role = ? WHERE username = ?'
         conn.execute(query, (new_role, username))
         conn.commit()
         conn.close()
@@ -151,7 +151,7 @@ class UserDAO(UserDAOInterface):
             SELECT o.name_orga 
             FROM organisation o
             JOIN work_link w ON o.id_orga = w.id_orga
-            JOIN user_ u ON w.id_user = u.id_user
+            JOIN user u ON w.id_user = u.id_user
             WHERE u.username = ?
         """
         result = conn.execute(query, (username,)).fetchone()
@@ -169,7 +169,7 @@ class UserDAO(UserDAOInterface):
     def findAll(self) -> list:
         """ Get all users """
         conn = self._getDbConnection()
-        users = conn.execute('SELECT * FROM user_;').fetchall()
+        users = conn.execute('SELECT * FROM user;').fetchall()
         userList = [User(dict(user)) for user in users]
         conn.close()
         return userList
@@ -177,7 +177,7 @@ class UserDAO(UserDAOInterface):
     def findAllUsername(self) -> list:
         """ Get all usernames """
         conn = self._getDbConnection()
-        users = conn.execute('SELECT username FROM user_;').fetchall()
+        users = conn.execute('SELECT username FROM user;').fetchall()
         usernameList = [user['username'] for user in users]
         conn.close()
         return usernameList 

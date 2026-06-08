@@ -46,7 +46,7 @@ class OrganisationDAO(OrganisationDAOInterface):
         conn = self._getDbConnection()
         query = """
             SELECT o.name_orga 
-            FROM user_ u
+            FROM user u
             JOIN work_link w ON u.id_user = w.id_user
             JOIN organisation o ON w.id_orga = o.id_orga
             WHERE u.username = ?

@@ -3,16 +3,17 @@ from app.models.SongPlayer import SongPlayer
 
 class SongPlayerDAOInterface :
 
-    def createDevice(self, name_place, ip_address, place_address, place_city, place_postcode, place_building_name, orga_id) -> None:
+    def createDevice(self, name_place, ip_address, address_place, city_place, postcode_place, building_name_place, orga_id) -> None:
         """
         Create a new song player in the database.
 
             Args:
                 name_place (str): The name of the place
                 ip_address (str): The IP address of the song player
-                place_city (str): The city of the place
-                place_postcode (str): The postcode of the place
-                place_building_name (str): The building name of the place
+                address_place (str): The address of the place
+                city_place (str): The city of the place
+                postcode_place (str): The postcode of the place
+                building_name_place (str): The building name of the place
                 orga_id (int): The ID of the organization
             Returns:
                 None

@@ -186,9 +186,11 @@ class TimetableController:
         playlist = ts.getPlaylistById(playlist_id)
         username = session.get('username')
         orga_id = orga.getIdByName(session.get('organisation_name'))
-        log.ldao.createLog("SCHEDULE_UPDATE",
-                            f"l'utilisateur {username} a mis à jour la plannificationde de la playlist {playlist.name}.",
-                           datetime.datetime.now(),
-                             orga_id)
+
+        if playlist is not None:
+            log.ldao.createLog("SCHEDULE_UPDATE",
+                                f"l'utilisateur {username} a mis à jour la plannificationde de la playlist {playlist.name}.",
+                                datetime.datetime.now(),
+                                orga_id)
         
         return redirect(url_for('editTables', nom_orga=nom_orga))

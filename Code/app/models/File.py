@@ -12,7 +12,7 @@ class SQLValue(TypedDict):
 class File :
     def __init__(self, dico: Dict[str, SQLValue]) -> None :
         self.id_file = dico['id_file'] 
-        self.name = dico['name']    
+        self.name = dico['file_name']    
         self.path = dico['path']    
         self.time_length = dico['time_length'] 
         self.upload_date = dico['upload_date'] 

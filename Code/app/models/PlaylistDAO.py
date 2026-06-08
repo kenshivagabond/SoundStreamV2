@@ -32,7 +32,7 @@ class PlaylistDAO(PlaylistDAOInterface):
         """ Get a playlist by its ID """
         conn = self._getDbConnection()
         playlist = conn.execute(
-            'SELECT * FROM playlist WHERE id_playlist = ?',
+            'SELECT * FROM playlist WHERE id_playlist = ?;',
             (playlist_id,)
         ).fetchone()
         conn.close()
@@ -121,8 +121,8 @@ class PlaylistDAO(PlaylistDAOInterface):
         conn = self._getDbConnection()
         print('Creating playlist in DAO:', name)
         conn.execute(
-            '''INSERT INTO playlist (name, creation_date, last_update_date, expiration_date) 
-            VALUES (?, ?, ?, ?)''',
+            '''INSERT INTO playlist (playlist_name, creation_date, last_update_date, expiration_date) 
+            VALUES (?, ?, ?, ?);''',
             (name, datetime.now(), datetime.now(), datetime.now() + timedelta(days=30))
         )
         conn.commit()
@@ -146,7 +146,7 @@ class PlaylistDAO(PlaylistDAOInterface):
     def getAllDays(self) -> list:
         """ Get all days in the planning """
         conn = self._getDbConnection()
-        days = conn.execute('SELECT * FROM Planning ORDER BY day_').fetchall()
+        days = conn.execute('SELECT * FROM planning ORDER BY diffusing_day').fetchall()
         conn.close()
         return days
     
@@ -233,7 +233,7 @@ class PlaylistDAO(PlaylistDAOInterface):
         conn.row_factory = sqlite3.Row
 
         sql = '''
-            SELECT pl.start_time as playlist_start, p.name as playlist_name, f.name, f.time_length, pl.id_playlist as id_playlist
+            SELECT pl.start_time as playlist_start, p.playlist_name, f.file_name, f.time_length, pl.id_playlist as id_playlist
             FROM planned pl
             JOIN composition c ON pl.id_playlist = c.id_playlist
             JOIN file f ON c.id_file = f.id_file

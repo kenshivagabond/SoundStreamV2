@@ -144,10 +144,10 @@ class DevicesController :
             form_data = {
                 'name_place': name_place,
                 'IP_adress': ip_address,      # ← Attention à l'orthographe
-                'place_adress': place_address,  # ← Attention à l'orthographe
-                'place_city': place_city,
-                'place_postcode': place_postcode,
-                'place_building_name': place_building_name,
+                'address_place': place_address,  # ← Attention à l'orthographe
+                'city_place': place_city,
+                'postcode_place': place_postcode,
+                'building_name_place': place_building_name,
                 'device_name': device_name
             }
             
