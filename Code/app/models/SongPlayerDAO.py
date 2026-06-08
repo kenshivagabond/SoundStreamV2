@@ -5,6 +5,7 @@ import subprocess
 from ping3 import ping, verbose_ping
 import sys
 import paramiko
+from concurrent.futures import ThreadPoolExecutor
 import json
 from app.models.SongPlayer import SongPlayer
 from app.models.SongPlayerDAOInterface import SongPlayerDAOInterface
@@ -27,8 +28,8 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
             ssh = paramiko.SSHClient()
             # se connecter malgré tout
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=player['ip'],
-            username='kenshi', # admettons pour l'instant que toutes les machines ont kenshi pour nom d'utilisateur
+            ssh.connect(hostname=player["ip"],
+            username=player["name"]',
             timeout=5)
             stdin, stdout, stderr = ssh.exec_command("curl -s https://api.ipify.org")
             public_ip = stdout.read().decode('utf-8').strip()
@@ -159,7 +160,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
         songplayers = conn.execute('SELECT * FROM song_player;').fetchall()
         songplayerList = list()
         for songplayer in songplayers :
-            songplayerList.append(SongPlayer(dict(songplayer)))
+            songplayerList.append(S/Documents/SoundStreamV2/Code/app/ongPlayer(dict(songplayer)))
         conn.close()
 
         if songplayerList :
@@ -226,6 +227,10 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
 
         except e:
             print(f"Probléme {e} dans rtps")
+
+    def pause_paspause(self):
+        """ Permet de faire pause ou pas on utilise toggle de mpd"""
+        subprocess.run(["mpc", "toggle"])
 
 
  
