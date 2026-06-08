@@ -67,7 +67,7 @@ class SongPlayerDAO(SongPlayerDAOInterface) :
                                      "ville": None,
                                      "orga": None}
 
-            with ThreadPoolExecutor(max_workers=10) as executor:
+            with ThreadPoolExecutor(max_workers=len(devices)) as executor:
                 updated_players = list(executor.map(self.sshForMultiThread, players.values()))
 
 

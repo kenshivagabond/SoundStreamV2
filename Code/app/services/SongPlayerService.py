@@ -2,7 +2,7 @@ from app.models.SongPlayerDAO import SongPlayerDAO
 from app.services.TimeTableService import TimeTableService 
 import subprocess
 import time
-import threading
+from concurrent.futures import ThreadPoolExecutor
 import datetime
 import platform
 import os
@@ -102,35 +102,40 @@ class SongPlayerService:
                 nb_off += 1
 
         return (nb_on, nb_off)
-        
 
-    def run_sync(self, ip, device_name):
-            # Configuration des dossiers
-            # On définit des couples (Source_Locale, Dossier_Destination_Distant)
+
+    def run_sync(self,player:dict) -> dict:
+        """Utilise pour run_sync toujours une notion de synchronisitée """
+        try :
+            device_name = player.get('name')
+            ip = player.get('ip')
             sync_tasks = [
-                (os.path.join(app.static_folder, 'audio/'), "music/"),
-                (os.path.join(app.static_folder, 'playlists/'), "playlists/")
+            (os.path.join(app.static_folder, 'audio/'), "music/"), # Dossier audio server, dossier music rasp
+            (os.path.join(app.static_folder, 'playlists/'), "playlists/") # Dossier playlists server , dossier playlists rasp
             ]
-            
-            base_dest_path = f"/home/{device_name}/SoundStreamDevice/"
+            base_dest_path = f"/home/{device_name}"
             for src, subfolder in sync_tasks:
-                full_remote_path = os.path.join(base_dest_path, subfolder)
-                
-                subprocess.run(["ssh", f"{device_name}@{ip}", f"mkdir -p {full_remote_path}"])
-
+                full_remote_path = f"{base_dest_path}/{subfolder}"
                 dest = f"{device_name}@{ip}:{full_remote_path}"
-                cmd = [
-                    "rsync", "-avz", "--delete",
-                    "-e", "ssh",
-                    src, dest
-                ]
-                
+                cmd = ["rsync", "-avz", "--delete", "-e", "ssh", src, dest]
                 try:
                     subprocess.run(cmd, check=True)
+                    print(f"[{device_name}] : Fichier envoyer")
                 except Exception as e:
-                    print(f"Erreur synchro {subfolder} vers {ip} : {e}")
-                    
-            threading.Thread(target=self.run_sync, args=(ip, device_name)).start()
+                    print(f"[{device_name}] : Echec")
+        except Exception as e:
+            print(f"Pb {e} vec run_sync")
+
+        return player
+        
+
+    def multi_thread_rsync(self):
+        """ Multi Thread avec rsync"""
+        devices = self.spdao.findDevices()
+
+        with ThreadPoolExecutor(max_workers=min(len(devices),10)) as executor: # nombre total de machine si inférieur à 10 , on va éviter de faire 50 thread en même temps
+            list(executor.map(self.run_sync, devices))
+
     
     def run_check(self):
         print("Scheduler démarré...")
