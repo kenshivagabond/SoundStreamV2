@@ -33,14 +33,12 @@ def populate_database():
     conn.executemany("INSERT INTO type_file (type_file) VALUES (?)", [('mp3',)])
     print("✅ Types insérés.")
 
-    # ✅ CORRECTION : mot de passe + email pour chaque utilisateur
-    # L'admin par défaut est créé ici avec des identifiants connus
     password_clair = '12345'
     hashed_pw = bcrypt.hashpw(password_clair.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     users = [
         # (username,  role,        password,   email)
-        ("admin",     'admin',     hashed_pw,  'admin@soundstream.local'),     # ← ADMIN PAR DÉFAUT
+        ("admin",    'admin',     hashed_pw,  'admin@soundstream.local'),
         ("Romain",   'admin',     hashed_pw,  'romain@soundstream.local'),
         ("Tristan",  'marketing', hashed_pw,  'tristan@soundstream.local'),
         ("Abou",     'sales',     hashed_pw,  'abou@soundstream.local'),
@@ -54,16 +52,15 @@ def populate_database():
     print("   ⚠️  Changez ce mot de passe dès la première connexion !")
 
     # Organisations
-    orgas = [('Orga1',), ('Orga2',), ('Orga3',)]
+    orgas = [('Orga1',), ('Orga2',)]
     conn.executemany("INSERT INTO organisation (name_orga) VALUES (?)", orgas)
 
-    # work_link : (id_user, id_orga)
-    # user ids : admin=1, Romain=2, Tristan=3, Abou=4
+   
     links = [
-        (1, 1),        # admin  → Orga1
-        (2, 1), (2, 2),
-        (3, 2), (3, 3),
-        (4, 2), (4, 3),
+        (1, 1), (1, 2),  
+        (2, 1), (2, 2),            # Romain   → Orga1, Orga2
+        (3, 2), (3, 3),            # Tristan  → Orga2, Orga3
+        (4, 2), (4, 3),            # Abou     → Orga2, Orga3
     ]
     conn.executemany("INSERT INTO work_link (id_user, id_orga) VALUES (?, ?)", links)
     print("✅ Orgas & Links insérés.")

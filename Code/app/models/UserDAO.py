@@ -180,4 +180,4 @@ class UserDAO(UserDAOInterface):
         users = conn.execute('SELECT username FROM user_;').fetchall()
         usernameList = [user['username'] for user in users]
         conn.close()
-        return usernameList
+        return usernameList 

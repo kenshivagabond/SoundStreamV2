@@ -14,3 +14,9 @@ class User:
         self.password = dico['password']
         self.role = dico['role']
         self.email = dico['email']
+
+
+
+
+    def __getitem__(self, key):
+        return getattr(self, key)
