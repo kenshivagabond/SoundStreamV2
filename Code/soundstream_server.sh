@@ -93,6 +93,32 @@ if [ "$1" == "i" ];then
 		
 fi
 if [ "$1" == "x" ];then
+	echo 'Lancement...'
+	systemctl start mpd
+	running= $(systemctl status mpd | grep "running")
+	echo "${GREEN} Malheuresement on doit s'occuper de la couche 2 à chaque démarrage"
+	echo "Creation pipes"
+        ip link add dev vx_sound type vxlan id 42 remote 100.94.208.67 local 100.112.176.54 dev tailscale0 dstport 4789
+        ip addr add 192.168.100.1/24 dev vx_sound
+        ip link set dev vx_sound up
+        ip route add 224.0.0.0/4 dev vx_sound
+        check=$(ip route | grep "224.0.0.0/4")
+        if [ -n "$check" ]; then
+                        echo "pipe : OK"
+			if [ -n "$running" ]; then
+				echo "MPD lancer"
+				mpc listall
+				mpc clear
+				mpc load playlist
+				mpc repeat on 
+				mpc play
+			else
+				echo -e "${RED}Pb avec MPD : executer journalctl -xeu mpd.service : des erreurs ?"
+	else 
+		echo -e "${RED} Pb avec pipe, : executer journalctl -xe des erreurs ?"
+
+	fi
 fi
+
 
 
