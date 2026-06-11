@@ -3,12 +3,29 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/devices.css') }}"> 
 
-
     <div class="devices">
         {% include 'header.html' %}
         <div class="bento">
             <div class="divider colored">
-                <h1>Devices</h1>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1vh;">
+                    <h1>Devices</h1>
+                    {% if session.get('role') == 'admin' %}
+                    <button id="sync-all-btn" onclick="syncAll()"
+                        class="custom-btn btn-green"
+                        style="padding: 0.8vh 2vh; cursor: pointer;">
+                         Sync All
+                    </button>
+                    {% endif %}
+                </div>
+
+                <!-- Barre de progression sync -->
+                <div id="sync-progress" style="display:none; margin-bottom: 1vh;">
+                    <p id="sync-status" style="color: #aaa; font-size: 0.9em;">Synchronisation en cours...</p>
+                    <div style="background: rgba(255,255,255,0.1); border-radius: 5px; height: 8px; width: 100%;">
+                        <div id="sync-bar" style="background: #00FF44; height: 8px; border-radius: 5px; width: 0%; transition: width 0.5s;"></div>
+                    </div>
+                </div>
+
                 <table>
                     <thead>
                         <tr>
@@ -20,7 +37,7 @@
                     </thead>
                     <tbody>
                         {% set ns = namespace(LineNb=0) %}
-                        {% for el in liste_song_player  %}
+                        {% for el in liste_song_player %}
                             {% if ns.LineNb < 11 %}
                                 {% set ns.LineNb = ns.LineNb + 1 %}
                                 <tr>
@@ -37,11 +54,11 @@
                                         </div>
                                     </td>
                                 </tr>
-                            {%endif%}
+                            {% endif %}
                         {% endfor %}
                         <tr>
-                            <td class = "actions-cell">
-                                <div class ="buttons-wrapper">
+                            <td class="actions-cell">
+                                <div class="buttons-wrapper">
                                     <a href="/addPlayer" class="custom-btn-add btn-green">Add Player</a>
                                 </div>
                             </td>
@@ -49,7 +66,7 @@
                             <td></td>
                             <td></td>
                         </tr>
-                            
+
                         <!-- Completion of empty lines -->
                         {% for i in range(ns.LineNb, 11) %}
                             <tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
@@ -57,9 +74,7 @@
                         <tr>
                             <td> Offline : <span class="red"> {{ nb_off }}</span></td>
                             <td> Playing : <span class="green"> {{ nb_on }}</span></td>
-
-                            <!-- Pitié saif si tu veux utiliser l'ia fait le bien, là c'est cracra de fou je suis sur que tu comprends meme pas la moitié...Et d'ailleurs pourquoi c'est là ca ;-; -->
-                            <td> <p style="font-size: 0.8em; font-style: italic; margin-bottom: 10px; color: gray;"> Last auto-update: <span id="last-update-time">--:--:--</span></p></td> 
+                            <td><p style="font-size: 0.8em; font-style: italic; margin-bottom: 10px; color: gray;"> Last auto-update: <span id="last-update-time">--:--:--</span></p></td>
                             <td>&nbsp;</td>
                         </tr>
                     </tbody>
@@ -67,30 +82,19 @@
             </div>
         </div>
     </div>
+
 <script>
-    // On définit le nom de l'organisation (donnée par le controller)
     const orga_name = "{{orga}}".trim();
 
-    //cette fonction permet de mettre a jour les statut sans recharger tout la page 
+    // Auto-refresh des statuts toutes les 25 secondes
     function refreshStatuses() {
-        console.log("Démarrage de la mise à jour automatique...");
-        // la fonction fait un appel au controleur
         fetch(`/auto_update_status/${orga_name}`)
-            .then(response => response.json()) // reponse est la requête http entière nous on la veut en json
+            .then(response => response.json())
             .then(data => {
-                // data est le JSON (qui pour chaque devices on un dico de type {id_player':id_player,'state':state})
-                console.log("Données reçues du serveur :", data);
                 data.forEach(device => {
-                    // device est un objet JavaScript qui est contenu dans data qui un Json
-                    // On cherche la cellule <td> par son ID 
                     const statusTd = document.getElementById(`status-${device.id_player}`);
-                    
                     if (statusTd) {
-                        // Mise à jour du texte
                         statusTd.textContent = device.state;
-
-                        // Mise à jour de la couleur 
-                        // car le if dans la class de la balise td ne se fait q'un fois au chargement de la page
                         if (device.state === 'ONLINE') {
                             statusTd.className = 'green';
                         } else if (device.state === 'OFFLINE') {
@@ -98,24 +102,53 @@
                         }
                     }
                 });
-
                 const now = new Date();
-
-                // On récupère les valeurs brutes
-                const h = now.getHours();
-                const m = now.getMinutes();
-                const s = now.getSeconds();
-
-                // On assemble avec les barres verticales
-                const displayTime = `${h}:${m}:${s}`;
-
-                document.getElementById('last-update-time').textContent = displayTime;
+                document.getElementById('last-update-time').textContent =
+                    `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
             })
-            .catch(err => console.error("Erreur auto-update:", err)); 
-            // si il y a une erreur elle s'affichera dans la console sans ça on ne pouras pas savoir que sa na pas marcher 
+            .catch(err => console.error("Erreur auto-update:", err));
     }
 
-    // Lancer le rafraîchissement toutes les 25 secondes
     setInterval(refreshStatuses, 25000);
+
+    // Synchronisation globale de tous les devices ONLINE
+    function syncAll() {
+        const btn = document.getElementById('sync-all-btn');
+        const progressDiv = document.getElementById('sync-progress');
+        const syncStatus = document.getElementById('sync-status');
+        const syncBar = document.getElementById('sync-bar');
+
+        // Afficher la barre de progression
+        btn.disabled = true;
+        btn.textContent = ' En cours...';
+        progressDiv.style.display = 'block';
+        syncBar.style.width = '30%';
+        syncStatus.textContent = 'Connexion aux devices...';
+
+        fetch(`/sync_all/${orga_name}`, { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                syncBar.style.width = '100%';
+                syncBar.style.background = data.fail > 0 ? '#ffee00' : '#00FF44';
+                syncStatus.textContent =
+                    ` ${data.success} device(s) synchronisé(s) avec succès` +
+                    (data.fail > 0 ? ` —  ${data.fail} échec(s)` : '');
+                btn.disabled = false;
+                btn.textContent = ' Sync All';
+
+                // Masquer après 5 secondes
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                    syncBar.style.width = '0%';
+                }, 5000);
+            })
+            .catch(err => {
+                syncStatus.textContent = ' Erreur lors de la synchronisation';
+                syncBar.style.background = 'red';
+                btn.disabled = false;
+                btn.textContent = ' Sync All';
+                console.error("Erreur sync all:", err);
+            });
+    }
 </script>
 {% endblock %}

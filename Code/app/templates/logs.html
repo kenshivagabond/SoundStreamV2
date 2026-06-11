@@ -3,12 +3,18 @@
 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/logs.css') }}"> 
 
-
     <div class="logs">
         {% include 'header.html' %}
         <div class="bento">
             <div class="divider colored">
-                <h1>Logs</h1>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1vh;">
+                    <h1>Logs</h1>
+                    <a href="{{ url_for('export_logs_csv', nom_orga=orga) }}" 
+                       class="custom-btn btn-green"
+                       style="padding: 0.8vh 2vh; text-decoration: none;">
+                        Export CSV
+                    </a>
+                </div>
 
                 <div class="table-container">
                 <table>
@@ -34,7 +40,6 @@
                     </tbody>
                 </table>
                 </div>
-                               
             </div>
         </div>
     </div>

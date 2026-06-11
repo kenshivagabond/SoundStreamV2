@@ -13,8 +13,8 @@ def _database_is_ready():
     if not os.path.exists(db_path):
         return False
 
-    required_tables = {'planned', 'user_', 'organisation', 'role',
-                       'playlist', 'Planning', 'work_link', 'song_player'}
+    required_tables = {'planned', 'user', 'organisation', 'role',
+                   'playlist', 'planning', 'work_link', 'song_player'}
     try:
         conn = sqlite3.connect(db_path)
         rows = conn.execute(
