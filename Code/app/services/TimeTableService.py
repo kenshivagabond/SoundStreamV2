@@ -249,7 +249,7 @@ class TimeTableService:
             end_display = end_dt.strftime("%H:%M")
 
             track_info = {
-                "name": row['name'],
+                "name": row['file_name'],
                 "start": start_key,
                 "end": end_display
             }
