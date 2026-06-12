@@ -207,26 +207,6 @@
                         </div>
                     </div>
 
-                    <script>
-                        document.querySelectorAll('.event[data-start][data-end]').forEach(event => {
-                            const start = event.dataset.start;
-                            const end = event.dataset.end;
-                            
-                            const [startHour, startMin] = start.split(':').map(Number);
-                            const [endHour, endMin] = end.split(':').map(Number);
-                            
-                            const topPercent = (startMin / 60) * 100;
-                            const durationMin = (endHour * 60 + endMin) - (startHour * 60 + startMin);
-                            
-                            // 500px par heure = 8.33px par minute
-                            const heightPx = durationMin * 8.33;
-                            
-                            event.style.top = topPercent + '%';
-                            event.style.height = heightPx + 'px';
-                        });
-                    </script>
-
-
 
                 </div>   <!-- Fin du calendrier ici -->  
 
