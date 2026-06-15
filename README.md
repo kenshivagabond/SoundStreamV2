@@ -70,7 +70,7 @@ SoundStream est un projet que nous sommes en train de réaliser dans le cadre de
 | HEURTAUX Romain   | heurtaux.romain@gmail.com             | romain_hrtx           |
 | FILLONNEAU Kenzo  | kenzo.fillonneau@edu.univ-paris13.fr  | -                     |
 | SEBBAH Sofiane    | sofianesbh6@gmail.com                 | -                     |
-| LEMEST Enzo       |                                       | -                     |
+| LE MESTE Enzo       | enzo.lemeste@outlook.fr             | -                     |
 | Lucas             |                                       | -                     |
 - Groupe Neptune A
 ### 🖊️ Descriptif du projet
