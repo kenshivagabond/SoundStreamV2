@@ -13,7 +13,7 @@ sps = SongPlayerService()
 ogs = OrganisationService()
 
 
-tracer.trace_layer("Devices Controller")
+@tracer.trace_layer("DevicesController")
 class DevicesController:
 
     @app.route('/devices/<nom_orga>', methods=['GET'])

@@ -12,7 +12,7 @@ ogs = OrganisationService()
 us = UserService()
 
 
-tracer.trace_layer("UserController")
+@tracer.trace_layer("UserController")
 class UserController:
 
     @app.route('/users/<nom_orga>', methods=['GET'])

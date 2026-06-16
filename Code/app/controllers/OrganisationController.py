@@ -7,7 +7,7 @@ from app.services.OrganisationService import OrganisationService
 
 orga_serv = OrganisationService()
 
-tracer.trace_layer("OrgaController")
+tracer.trace_layer("OrganisationController")
 class OrganisationController:
 
     @app.route('/organisation', methods=['GET'])

@@ -1,6 +1,6 @@
 from flask import render_template, session, redirect, url_for, request
 from app import app
-from app import tracer
+from app.tracer import trace_layer
 from app.controllers.LoginController import LoggedIn, reqrole
 from app.services.UserService import UserService
 from app.services.TimeTableService import TimeTableService
@@ -21,7 +21,7 @@ file_service = FileService()
 
 
 
-tracer.trace_layer("DashBoard Controller")
+@trace_layer("DashBoardController")
 class DashboardController:
 
     @app.route('/dashboard/<nom_orga>', methods=['GET', 'POST'])

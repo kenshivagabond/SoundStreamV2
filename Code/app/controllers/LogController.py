@@ -8,7 +8,7 @@ from app import tracer
 orga = OrganisationService()
 log = LogService()
 
-tracer.trace_layer("LogController")
+@tracer.trace_layer("LogController")
 class LogController:
 
     @app.route('/logs/<nom_orga>', methods=['GET'])

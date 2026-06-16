@@ -17,7 +17,7 @@ ts = TimeTableService()
 file_service = FileService()
 
 
-tracer.trace_layer("TimetableController")
+@tracer.trace_layer("TimetableController")
 class TimetableController:
 
     @app.route('/timetable/<nom_orga>', methods=['GET'])

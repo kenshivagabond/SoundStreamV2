@@ -2,7 +2,7 @@ import bcrypt
 from flask import render_template, session, redirect, url_for, request
 from functools import wraps
 from app import app
-from app import tracer
+from app.tracer import trace_layer
 from app.services.LogService import LogService
 from app.services.OrganisationService import OrganisationService
 from app.services.UserService import UserService
@@ -46,7 +46,7 @@ def reqrole(roles_needed):
 ################
 ## LOGIN PAGE ##
 ################
-tracer.trace_layer("LoginController")
+@trace_layer("LoginController")
 class LoginController:
 
     @app.route('/', methods=['GET', 'POST'])
