@@ -1,5 +1,6 @@
 from flask import render_template, session, redirect, url_for, request
 from app import app
+from app import tracer
 from app.services.TimeTableService import TimeTableService
 from app.services.LogService import LogService
 from app.services.OrganisationService import OrganisationService
@@ -15,6 +16,8 @@ log = LogService()
 ts = TimeTableService()
 file_service = FileService()
 
+
+tracer.trace_layer("TimetableController")
 class TimetableController:
 
     @app.route('/timetable/<nom_orga>', methods=['GET'])

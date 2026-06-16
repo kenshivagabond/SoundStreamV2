@@ -1,11 +1,13 @@
 from flask import render_template, session, redirect, url_for, request
 from app import app
+from app import tracer
 from app.controllers.LoginController import LoggedIn
 from app.services.OrganisationService import OrganisationService
 
 
 orga_serv = OrganisationService()
 
+tracer.trace_layer("OrgaController")
 class OrganisationController:
 
     @app.route('/organisation', methods=['GET'])

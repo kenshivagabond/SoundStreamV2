@@ -1,5 +1,6 @@
 from flask import render_template, session, redirect, url_for, request
 from app import app
+from app import tracer
 from app.controllers.LoginController import LoggedIn, reqrole
 from app.services.UserService import UserService
 from app.services.OrganisationService import OrganisationService
@@ -10,6 +11,8 @@ log = LogService()
 ogs = OrganisationService()
 us = UserService()
 
+
+tracer.trace_layer("UserController")
 class UserController:
 
     @app.route('/users/<nom_orga>', methods=['GET'])

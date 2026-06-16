@@ -1,6 +1,7 @@
 from flask import render_template, session, redirect, url_for, request, jsonify
 import datetime
 from app import app
+from app import tracer
 from app.controllers.LoginController import LoggedIn, reqrole
 from app.services.SongPlayerService import SongPlayerService
 from app.services.OrganisationService import OrganisationService
@@ -11,6 +12,8 @@ log = LogService()
 sps = SongPlayerService()
 ogs = OrganisationService()
 
+
+tracer.trace_layer("Devices Controller")
 class DevicesController:
 
     @app.route('/devices/<nom_orga>', methods=['GET'])

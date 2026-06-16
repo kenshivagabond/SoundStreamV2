@@ -3,11 +3,12 @@ from app import app
 from app.controllers.LoginController import LoggedIn, reqrole
 from app.services.OrganisationService import OrganisationService
 from app.services.LogService import LogService
+from app import tracer
 
 orga = OrganisationService()
 log = LogService()
 
-
+tracer.trace_layer("LogController")
 class LogController:
 
     @app.route('/logs/<nom_orga>', methods=['GET'])
