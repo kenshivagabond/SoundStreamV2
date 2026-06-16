@@ -21,7 +21,7 @@
                         type="text" 
                         id="name_place" 
                         name="name_place" 
-                        value="{{ player.name_place }}"
+                        value="{{ context.player.name_place }}"
                         required
                         style="width: 100%; padding: 1vh; border-radius: 5px; border: 1px solid #ccc; background: rgba(255,255,255,0.1); color: white;"
                     >
@@ -36,7 +36,7 @@
                         type="text" 
                         id="ip_address" 
                         name="ip_address" 
-                        value="{{ player.IP_adress }}"
+                        value="{{ context.player.IP_adress }}"
                         required
                         pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$"
                         title="Format : 192.168.1.1"
@@ -53,7 +53,7 @@
                         type="text" 
                         id="place_address" 
                         name="place_address" 
-                        value="{{ player.place_adress }}"
+                        value="{{ context.player.place_adress }}"
                         required
                         style="width: 100%; padding: 1vh; border-radius: 5px; border: 1px solid #ccc; background: rgba(255,255,255,0.1); color: white;"
                     >
@@ -68,7 +68,7 @@
                         type="text" 
                         id="place_city" 
                         name="place_city"
-                        value="{{ player.place_city }}"
+                        value="{{ context.player.place_city }}"
                         required
                         style="width: 100%; padding: 1vh; border-radius: 5px; border: 1px solid #ccc; background: rgba(255,255,255,0.1); color: white;"
                     >
@@ -83,7 +83,7 @@
                         type="text" 
                         id="place_postcode" 
                         name="place_postcode"
-                        value = "{{ player.place_postcode }}"
+                        value = "{{ context.player.place_postcode }}"
                         required
                         style="width: 100%; padding: 1vh; border-radius: 5px; border: 1px solid #ccc; background: rgba(255,255,255,0.1); color: white;"
                     >
@@ -95,8 +95,8 @@
                         Building :
                     </label>
                     <select id="place_building_name" name="place_building_name" required style="width:100%; padding:1vh; border-radius:5px; border:1px solid #ccc; background: rgba(255,255,255,0.1); color: white;">
-                        {% for building in buildings %}
-                            <option value="{{ building }}" {% if player.place_building_name == building %}selected{% endif %}>
+                        {% for building in context.buildings %}
+                            <option value="{{ building }}" {% if context.player.place_building_name == building %}selected{% endif %}>
                                 {{ building.capitalize() }}
                             </option>
                         {% endfor %}
@@ -112,7 +112,7 @@
                         type="text" 
                         id="device_name" 
                         name="device_name"
-                        value="{{ player.device_name }}"
+                        value="{{ context.player.device_name }}"
                         required
                         style="width: 100%; padding: 1vh; border-radius: 5px; border: 1px solid #ccc; background: rgba(255,255,255,0.1); color: white;"
                     >

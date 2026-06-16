@@ -90,7 +90,7 @@
                         Building :
                     </label>
                     <select id="place_building_name" name="place_building_name" required style="width:100%; padding:1vh; border-radius:5px; border:1px solid #ccc; background: rgba(255,255,255,0.1); color: white;">
-                        {% for building in buildings %}
+                        {% for building in context.buildings %}
                             <option value="{{ building }}">
                                 {{ building.capitalize() }}
                             </option>

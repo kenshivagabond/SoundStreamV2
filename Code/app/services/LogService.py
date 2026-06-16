@@ -1,9 +1,7 @@
 from app.models.LogDAO import LogSqliteDAO as LogDAO
-from typing import *
 
 class LogService:
-    ''' This class will manipulate the log to give 
-    what the LogController wants.'''
+    """Processes and formats log data for the LogController."""
 
     def __init__(self):
         self.ldao = LogDAO()
@@ -16,27 +14,31 @@ class LogService:
             list_logs.append(log.toDict())
 
         return list_logs
-    
+
     def getLogsByOrganisation(self, id_orga: int) -> list[dict]:
         logs = self.ldao.findAllByOrganization(id_orga)
         list_logs = list()
-        for log in logs :
+        for log in logs:
             list_logs.append(log.toDict())
 
         return list_logs
-    
+
     def getTicketLogs(self) -> list[dict]:
-        tickets = self.ldao.findAllTickets()  # New method to get ticket logs
+        tickets = self.ldao.findAllTickets()
         list_tickets = list()
-        for ticket in tickets :
+        for ticket in tickets:
             list_tickets.append(ticket.toDict())
 
         return list_tickets
-    
+
     def getMessageDiffusedLogs(self) -> list[dict]:
-        messages = self.ldao.findAllMessageDiffused()  # New method to get message diffused logs
+        messages = self.ldao.findAllMessageDiffused()
         list_messages = list()
-        for message in messages :
+        for message in messages:
             list_messages.append(message.toDict())
 
         return list_messages
+
+    def createLog(self, type_log: str, text_log: str, date_log: str, id_orga: int) -> None:
+        """ Wrapper for creating a log entry """
+        self.ldao.createLog(type_log, text_log, date_log, id_orga)

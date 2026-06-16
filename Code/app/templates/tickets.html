@@ -20,7 +20,7 @@
                             </thead>
                             <tbody>
                                 {% set ns = namespace(LineNb=0) %}
-                                {% for ticket in ticket_list %}
+                                {% for ticket in context.ticket_list %}
                                     {% if ns.LineNb < 14 %}
                                         {% set ns.LineNb = ns.LineNb + 1 %}
                                         <tr>

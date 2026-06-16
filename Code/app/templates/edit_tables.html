@@ -21,13 +21,13 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for entry in days_with_playlists %}
+                            {% for entry in context.days_with_playlists %}
                                 <tr>
                                     <td style="font-weight: bold; font-size: 2vh;">
                                         {{ entry.day_name }}
                                     </td>
 
-                                    <form action="{{ url_for('updateDay', nom_orga=orga) }}" method="POST">
+                                    <form action="{{ url_for('updateDay', nom_orga=context.orga) }}" method="POST">
                                         <input type="hidden" name="day_name" value="{{ entry.day_name }}">
 
                                         <td>
@@ -39,7 +39,7 @@
                                                     style="width: 95%; padding: 0.5vh; font-size: 1.8vh; height: auto;">
                                                 <option value="">-- None --</option>
                                                 
-                                                {% for p in all_playlists %}
+                                                {% for p in context.all_playlists %}
                                                     <option value="{{ p.id_playlist }}" 
                                                         {% if current_playlist_id == p.id_playlist %}selected{% endif %}>
                                                         {{ p.name }}

@@ -19,12 +19,12 @@
                             </thead>
                             <tbody>
                                 {% set ns = namespace(LineNb=0) %}
-                                {% for el in us.findUsersInOrganisation(orga) %}
+                                {% for el in context.us.findUsersInOrganisation(context.orga) %}
                                     {% if ns.LineNb < 12 %}
                                         {% set ns.LineNb = ns.LineNb + 1 %}
                                         <tr>
                                             <td> {{el}} </td>
-                                            <td> {{ us.findByUsername(el)['role']}}</td>
+                                            <td> {{ context.us.findByUsername(el)['role']}}</td>
                                             <td class="actions-cell">
                                                 <div class="buttons-wrapper">
                                                     <a href="/deleteUsn/{{ el }}" class="custom-btn btn-red" onclick="return confirm('Confirm deletion?')">Delete</a>

@@ -2,7 +2,7 @@
 
     <h1>Upload Advertisement Message</h1>
 
-    <form action="{{url_for('advertisement', nom_orga=orga)}}" method="POST" enctype="multipart/form-data" class="form">
+    <form action="{{url_for('advertisement', nom_orga=context.orga)}}" method="POST" enctype="multipart/form-data" class="form">
         <div class="uploadfile">
             <input type="file" id="file" name="uploadfile" accept=".mp3" class="input-hidden">
 

@@ -11,8 +11,8 @@
                 <h1>Current Playlist</h1>
                 
                 
-                {% if selected_playlist %}
-                    <h3>Playlist : {{ selected_playlist.name }}</h3>
+                {% if context.selected_playlist %}
+                    <h3>Playlist : {{ context.selected_playlist.name }}</h3>
                     
                     <div class="tabdiv">
                         <table>
@@ -25,15 +25,15 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% if files %}
-                                    {% for file in files %}
+                                {% if context.files %}
+                                    {% for file in context.files %}
                                         <tr>
                                             <td>{{ file.name }}</td>
                                             <td>{{ file.type_file }}</td>
                                             <td>{{ file.time_length }}</td>
                                             <td class="actions-cell">
                                                 <div class="buttons-wrapper">
-                                                    <a href="{{ url_for('deleteFileFromPlaylist', nom_orga=orga, playlist_id=selected_playlist.id_playlist, file_id=file.id_file) }}" 
+                                                    <a href="{{ url_for('deleteFileFromPlaylist', nom_orga=context.orga, playlist_id=context.selected_playlist.id_playlist, file_id=file.id_file) }}" 
                                                        class="custom-btn btn-red" 
                                                        onclick="return confirm('Confirm deletion?')">
                                                         Delete
@@ -65,12 +65,12 @@
             <div class="divider colored">
                 <h1>Playlist Choice</h1>
                 <div class="choice-playlist">
-                    <form method="POST" action="{{ url_for('choosePlaylist', nom_orga=orga) }}" class=" miniform">
+                    <form method="POST" action="{{ url_for('choosePlaylist', nom_orga=context.orga) }}" class=" miniform">
                         <select name="playlist_id" class="btn-design mini" required>
                             <option value="">-- Choose a playlist --</option>
-                            {% for playlist in playlists %}
+                            {% for playlist in context.playlists %}
                                 <option value="{{ playlist.id_playlist }}" 
-                                    {% if selected_playlist and playlist.id_playlist == selected_playlist.id_playlist %}
+                                    {% if context.selected_playlist and playlist.id_playlist == context.selected_playlist.id_playlist %}
                                     selected
                                     {% endif %} >
                                         {{ playlist.name }}
@@ -83,7 +83,7 @@
                         </button>
                     </form>
 
-                    <form method="POST" action="{{ url_for('createPlaylist', nom_orga=orga) }}" class="miniform" style="margin-top: 15px;">
+                    <form method="POST" action="{{ url_for('createPlaylist', nom_orga=context.orga) }}" class="miniform" style="margin-top: 15px;">
                         <input type="text" 
                                name="playlist_name" 
                                class="btn-design mini" 
@@ -95,11 +95,11 @@
 
             </div>
 
-            {% if selected_playlist %}
+            {% if context.selected_playlist %}
                 <div class="divider colored">
                     <h1>Upload Song</h1>
 
-                    <form method="POST" action="{{ url_for('addFileToPlaylist', nom_orga=orga, playlist_id=selected_playlist.id_playlist) }}" enctype="multipart/form-data" class="form">
+                    <form method="POST" action="{{ url_for('addFileToPlaylist', nom_orga=context.orga, playlist_id=context.selected_playlist.id_playlist) }}" enctype="multipart/form-data" class="form">
                         <div class="uploadfile">
                             <input type="file" id="file" name="uploadfile" accept=".mp3" class="input-hidden" required>
                             <label for="file" class="btn-design"  id="file-name">
@@ -126,11 +126,11 @@
                     <h1>Misc</h1>
 
                     <div class="misc">
-                        <p>Number of titles: <strong>{{ title_count }}</strong></p>
-                        <p>Number of ads: <strong>{{ ads_count }}</strong></p>
-                        <p>Last Updated: <strong>{{ selected_playlist.last_update_date }}</strong></p>
-                        <form method="POST" action="{{ url_for('deletePlaylist', nom_orga=orga) }}" class="miniform">
-                            <input type="hidden" name="playlist_id" value="{{ selected_playlist.id_playlist }}">
+                        <p>Number of titles: <strong>{{ context.title_count }}</strong></p>
+                        <p>Number of ads: <strong>{{ context.ads_count }}</strong></p>
+                        <p>Last Updated: <strong>{{ context.selected_playlist.last_update_date }}</strong></p>
+                        <form method="POST" action="{{ url_for('deletePlaylist', nom_orga=context.orga) }}" class="miniform">
+                            <input type="hidden" name="playlist_id" value="{{ context.selected_playlist.id_playlist }}">
 
                             <button type="submit" class="mini btn-red deleteplst" onclick="return confirm('Are you sure you want to delete this playlist ? This action can\'t be undone,');">
                                 Delete playlist

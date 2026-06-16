@@ -2,101 +2,101 @@
 import sys
 import os
 
-# Ajoute le répertoire parent au path pour pouvoir importer app
+# Add parent directory to path to allow importing app
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.models.UserDAO import UserDAO
 
 def test_authentication():
     """
-    Teste l'authentification pour 3 utilisateurs:
+    Tests authentication for 3 users:
     1. Romain (admin)
-    2. Tristan (communication)
-    3. Abou (commercial)
-    
-    Le mot de passe pour tous est '12345' (défini dans initdb.py)
+    2. Tristan (marketing)
+    3. Abou (sales)
+
+    Passwords are defined in the seeder (Seeder.py).
     """
-    
-    print("=== TEST D'AUTHENTIFICATION ===\n")
-    
-    # Création d'une instance du DAO
+
+    print("=== AUTHENTICATION TEST ===\n")
+
+    # Create a DAO instance
     dao = UserDAO()
-    
-    # Liste des utilisateurs à tester
+
+    # List of users to test
     test_users = [
         {"username": "Romain", "password": "12345", "expected_role": "admin"},
-        {"username": "Tristan", "password": "12345", "expected_role": "marketing"},
-        {"username": "Abou", "password": "12345", "expected_role": "sales"}
+        {"username": "Tristan", "password": "678910", "expected_role": "marketing"},
+        {"username": "Abou", "password": "1112131415", "expected_role": "sales"}
     ]
-    
-    # Compteurs de résultats
+
+    # Result counters
     tests_passed = 0
     tests_failed = 0
-    
-    # Test pour chaque utilisateur
+
+    # Test each user
     for user_test in test_users:
         username = user_test["username"]
         password = user_test["password"]
         expected_role = user_test["expected_role"]
-        
-        print(f"Test de {username}...")
-        
-        # Vérification 1: L'utilisateur existe-t-il ?
+
+        print(f"Testing {username}...")
+
+        # Check 1: Does the user exist?
         user = dao.findByUsername(username)
         if user is None:
-            print(f"   ÉCHEC: Utilisateur '{username}' non trouvé dans la base\n")
+            print(f"   FAIL: User '{username}' not found in the database\n")
             tests_failed += 1
             continue
-        
-        # Vérification 2: Le mot de passe est-il correct ?
+
+        # Check 2: Is the password correct?
         if not dao.verifyUser(username, password):
-            print(f"  ❌ ÉCHEC: Mot de passe incorrect pour '{username}'\n")
+            print(f"  ❌ FAIL: Incorrect password for '{username}'\n")
             tests_failed += 1
             continue
-        
-        # Vérification 3: Le rôle est-il correct ?
+
+        # Check 3: Is the role correct?
         if user.role != expected_role:
-            print(f"  ❌ ÉCHEC: Rôle incorrect pour '{username}'")
-            print(f"     Attendu: {expected_role}, Obtenu: {user.role}\n")
+            print(f"  ❌ FAIL: Incorrect role for '{username}'")
+            print(f"     Expected: {expected_role}, Got: {user.role}\n")
             tests_failed += 1
             continue
-        
-        # Si on arrive ici, tous les tests sont passés
-        print(f"  ✅ SUCCÈS: {username} authentifié correctement (rôle: {user.role})\n")
+
+        # All checks passed
+        print(f"  ✅ PASS: {username} authenticated correctly (role: {user.role})\n")
         tests_passed += 1
-    
-    # Affichage du résumé
-    print("=== RÉSUMÉ DES TESTS ===")
-    print(f"Tests réussis: {tests_passed}/3")
-    print(f"Tests échoués: {tests_failed}/3")
-    
+
+    # Summary
+    print("=== TEST SUMMARY ===")
+    print(f"Tests passed: {tests_passed}/3")
+    print(f"Tests failed: {tests_failed}/3")
+
     if tests_passed == 3:
-        print("\n TOUS LES TESTS SONT PASSÉS AVEC TOUT LE RESPECT !")
+        print("\n ALL TESTS PASSED!")
         return True
     else:
-        print("\n⚠️  CERTAINS TESTS ONT ÉCHOUÉ LES MECS ILS ONT PASSSSSSS")
+        print("\n⚠️  SOME TESTS FAILED")
         return False
 
 def test_wrong_password():
     """
-    Vérifie que l'authentification échoue avec un mauvais mot de passe
+    Verifies that authentication fails with an incorrect password.
     """
-    print("\n=== MAUVAIS MOT DE PASSE ===\n")
-    
+    print("\n=== WRONG PASSWORD TEST ===\n")
+
     dao = UserDAO()
-    
-    # Tentative avec un mauvais mot de passe
+
+    # Attempt with a wrong password
     if dao.verifyUser("Romain", "wrongpassword"):
-        print(" ÉCHEC: Le système a accepté un mauvais mot de passe !")
+        print(" FAIL: The system accepted an incorrect password!")
         return False
     else:
-        print(" SUCCÈS: Le système a bien rejeté le mauvais mot de passe")
+        print(" PASS: The system correctly rejected the wrong password")
         return True
 
 if __name__ == "__main__":
-    # Lance les tests
+    # Run the tests
     auth_ok = test_authentication()
     bonus_ok = test_wrong_password()
-    
-    # Code de sortie (0 = succès, 1 = échec)
+
+    # Exit code (0 = success, 1 = failure)
     sys.exit(0 if (auth_ok and bonus_ok) else 1)

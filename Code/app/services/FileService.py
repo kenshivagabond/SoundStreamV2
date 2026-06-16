@@ -169,5 +169,6 @@ class FileService:
         # 3. Delete from Database and return the boolean result (True/False)
         return self.fdao.deleteFile(id_file)
         
-
-
+    def findFileById(self, id_file: int) -> Optional[File]:
+        """ Find a file by its ID """
+        return self.fdao.findFileById(id_file)

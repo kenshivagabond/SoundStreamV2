@@ -2,8 +2,8 @@ from app.models.User import User
 
 
 class UserDAOInterface :
-    def createUser(self, username, password, role) :
-        """ create a new user """
+    def createUser(self, username, password, role, organisation):
+        """ Create a new user """
         pass
 
     def createLinkUserOrganisation(self, username, organisation) -> None:

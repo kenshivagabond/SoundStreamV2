@@ -1,5 +1,5 @@
 <div class="divider colored">
-<a href="{{ url_for('tickets', nom_orga=orga) }}">
+<a href="{{ url_for('tickets', nom_orga=context.orga) }}">
 
     <h1>Tickets</h1>
 
@@ -7,18 +7,18 @@
     <table>
         <thead>
             <tr>
-                <th>Problème</th>
+                <th>Issue</th>
                 <th>Date Ticket</th>
                 <th>Type</th>
             </tr>
         </thead>
 
         <tbody>
-            {% set ticket_list = los.getTicketLogs() %}
+            {% set context.ticket_list = context.los.getTicketLogs() %}
             {% set ns = namespace(LineNb=0) %}
 
-            {% if ticket_list|length > 0 %}
-                {% for ticket in ticket_list %}
+            {% if context.ticket_list|length > 0 %}
+                {% for ticket in context.ticket_list %}
                     {% if ns.LineNb < 5 %}
                         {% set ns.LineNb = ns.LineNb + 1 %}
                         <tr>
@@ -31,7 +31,7 @@
 
             {% else %}
                 <tr>
-                    <td> Aucun ticket n'a été enregistré </td>
+                    <td> No tickets recorded </td>
                     <td></td>
                     <td></td>
                 </tr>

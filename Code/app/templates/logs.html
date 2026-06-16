@@ -20,7 +20,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for log in log_list %}
+                        {% for log in context.log_list %}
                         <tr>
                             <td>{{log.text_log}}</td>
                             <td>{{log.date_log}}</td>

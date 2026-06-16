@@ -36,8 +36,8 @@
 
     </style>
     <div class="error-404">
-        <h1> {{ metadata['error_code'] }}</h1>
-        <p> Error {{ metadata['error_code'] }} - {{ metadata['description'] }} </p>
+        <h1> {{ context.metadata['error_code'] }}</h1>
+        <p> Error {{ context.metadata['error_code'] }} - {{ context.metadata['description'] }} </p>
     </div>
 
 {%endblock%}

@@ -7,11 +7,6 @@ class SQLValue(TypedDict):
     IP_adress: str
     state: str
     last_synchronization: datetime
-    place_adress: str
-    place_postcode: str
-    place_city: str
-    place_building_name: str
-    device_name: str
     id_orga: int
     
 class SongPlayer : 

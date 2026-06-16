@@ -90,7 +90,7 @@ class UserDAO(UserDAOInterface) :
         """
         res = conn.execute(query, (organisation,)).fetchall()
         conn.close()
-        return [row[0] for row in res] ### À VERIFIER ###
+        return [row[0] for row in res]
 
     def verifyUser(self,username, password) -> bool:
         """Verify if username and password are correct"""

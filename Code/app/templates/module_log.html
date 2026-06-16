@@ -1,5 +1,5 @@
 <div class="divider colored">
-<a href="{{ url_for('logs', nom_orga=orga) }}">
+<a href="{{ url_for('logs', nom_orga=context.orga) }}">
 
     <h1>Logs</h1>
 
@@ -15,7 +15,7 @@
 
         <tbody>
             {% set ns = namespace(LineNb=0) %}
-            {% for el in los.getLogsByOrganisation(ogs.getIdByName(orga)) %}
+            {% for el in context.los.getLogsByOrganisation(context.ogs.getIdByName(context.orga)) %}
                 {% if ns.LineNb < 5 %}
                     {% set ns.LineNb = ns.LineNb + 1 %}
                     <tr>

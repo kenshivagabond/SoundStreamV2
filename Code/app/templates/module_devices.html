@@ -1,5 +1,5 @@
 <div class="divider colored" style="position: relative;"> 
-<a href="{{ url_for('devices', nom_orga=orga) }}">
+<a href="{{ url_for('devices', nom_orga=context.orga) }}">
 
     <h1>Devices</h1> 
 
@@ -14,7 +14,7 @@
 
         <tbody>
             {% set ns = namespace(LineNb=0) %}
-            {% for el in liste_song_player %}
+            {% for el in context.liste_song_player %}
                 {% if ns.LineNb < 4 %}
                     {% set ns.LineNb = ns.LineNb + 1 %}
                     <tr>
@@ -33,8 +33,8 @@
             {% endfor %}
 
             <tr>
-                <td> Offline : <span class="red"> {{ nb_off }}</span></td>
-                <td> Playing : <span class="green"> {{ nb_on }}</span></td>
+                <td> Offline : <span class="red"> {{ context.nb_off }}</span></td>
+                <td> Playing : <span class="green"> {{ context.nb_on }}</span></td>
                 <td></td>
             </tr>
 

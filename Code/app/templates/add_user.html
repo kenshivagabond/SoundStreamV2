@@ -27,7 +27,7 @@
                         Role :
                     </label>
                     <select id="role" name="role" required style="width:100%; padding:1vh; border-radius:5px; border:1px solid #ccc; background: rgba(255,255,255,0.1); color: white;">
-                        {% for role in roles %}
+                        {% for role in context.roles %}
                             <option value="{{ role }}">
                                 {{ role.capitalize() }}
                             </option>
@@ -45,7 +45,7 @@
                 
                 <!-- Boutons -->
                 <div style="display: flex; gap: 2vh; justify-content: center; margin-top: 3vh;">
-                    <a href="{{ url_for('users', nom_orga=orga) }}" class="custom-btn btn-yellow" style="background-color: #ffee00; color: black; padding: 1.2vh 3.5vh; border: none;">Annuler</a>
+                    <a href="{{ url_for('users', nom_orga=context.orga) }}" class="custom-btn btn-yellow" style="background-color: #ffee00; color: black; padding: 1.2vh 3.5vh; border: none;">Annuler</a>
                     
                     <button type="submit" class="custom-btn" 
                             style="background-color:#00FF44; color: black; padding: 1.2vh 3.5vh; ">

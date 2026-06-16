@@ -1,5 +1,5 @@
 <div class="divider colored">
-<a href="{{ url_for('users', nom_orga=orga) }}">
+<a href="{{ url_for('users', nom_orga=context.orga) }}">
 
     <h1>Users</h1>
     
@@ -13,12 +13,12 @@
         </thead>
         <tbody>
             {% set ns = namespace(LineNb=0) %}
-            {% for el in us.findUsersInOrganisation(orga) %}
+            {% for el in context.us.findUsersInOrganisation(context.orga) %}
                 {% if ns.LineNb < 5 %}
                     {% set ns.LineNb = ns.LineNb + 1 %}
                     <tr>
                         <td> {{el}} </td>
-                        <td> {{ us.findByUsername(el)['role']}}</td>
+                        <td> {{ context.us.findByUsername(el)['role']}}</td>
                     </tr>
                 {%endif%}
             {% endfor %}

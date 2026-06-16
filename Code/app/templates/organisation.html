@@ -4,11 +4,11 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/organisation.css') }}"> 
 
     <div class="organisation">
-        {% if userorga != None %}
+        {% if context.userorga != None %}
             <div class ='block'>
                 <h2> Organisations </h2>
                 <ul>
-                    {% for orga in userorga %}
+                    {% for orga in context.userorga %}
                     <li>
                         <a href="{{ url_for('dashboard', nom_orga=orga) }}" class="el">
                             <img src="{{ url_for('static', filename='images/organisation_icon.jpg') }}" alt="Icon" class="orgicon">

@@ -1,21 +1,11 @@
 from app.models.SongPlayer import SongPlayer
 
 
-class SongPlayerDAOInterface :
+class SongPlayerDAOInterface:
 
-    def createDevice(self, name_place, ip_address, place_address, place_city, place_postcode, place_building_name, orga_id) -> None:
+    def createDevice(self, name_place, ip_address, state, place_address, place_postcode, place_city, place_building_name, device_name, id_orga) -> None:
         """
         Create a new song player in the database.
-
-            Args:
-                name_place (str): The name of the place
-                ip_address (str): The IP address of the song player
-                place_city (str): The city of the place
-                place_postcode (str): The postcode of the place
-                place_building_name (str): The building name of the place
-                orga_id (int): The ID of the organization
-            Returns:
-                None
         """
         pass
 
@@ -27,7 +17,7 @@ class SongPlayerDAOInterface :
         """ Update a song player in the database. """
         pass
 
-    def deleteSongPlayerInDb(self,id_song_player) -> None:
+    def deleteSongPlayerInDb(self, id_song_player) -> None:
         """ Delete a song player to the database """
         pass
 
@@ -52,7 +42,7 @@ class SongPlayerDAOInterface :
             Returns:
                 List[SongPlayer] : A list of SongPlayer instances
         """
-        pass    
+        pass
 
     def findAllByOrganisationAndStatus(self, id_orga, status) -> list:
         """ find all song players by organisation and status """
@@ -71,6 +61,18 @@ class SongPlayerDAOInterface :
         """Get all distinct building names from the song players."""
         pass
 
-    def UpdateState(self, state, id_song_player) -> None :
-        """ Update the state of a specific song player """
+    def UpdateState(self, ip) -> None:
+        """ Update the state of a specific song player by IP """
+        pass
+
+    def findDevices(self) -> None:
+        """ Reach any devices through tailscale. """
+        pass
+
+    def findAllOnlineDevices(self) -> list[SongPlayer]:
+        """ Find all devices that are currently online. """
+        pass
+
+    def sshForMultiThread(self, player: dict) -> dict:
+        """ SSH into a device to retrieve its public IP and geolocation. """
         pass

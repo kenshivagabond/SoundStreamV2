@@ -8,29 +8,29 @@
             <a href="/organisation"><p class="icon"> 🔉 </p></a>
             
             {% if session['role'] == 'admin' %}
-                <a href="/timetable/{{ orga }}" class="navbtn">CALENDAR</a>
-                <a href="/devices/{{ orga }}" class="navbtn">DEVICES</a>
+                <a href="/timetable/{{ context.orga }}" class="navbtn">CALENDAR</a>
+                <a href="/devices/{{ context.orga }}" class="navbtn">DEVICES</a>
                 <a href="/tickets" class="navbtn">TICKETS</a>
-                <a href="/users/{{ orga }}" class="navbtn">USERS</a>
-                <a href="/logs/{{ orga }}" class="navbtn">LOGS</a>
-                <!-- <a href="/tools/{{ orga }}" class="navbtn">TOOLS</a> -->
+                <a href="/users/{{ context.orga }}" class="navbtn">USERS</a>
+                <a href="/logs/{{ context.orga }}" class="navbtn">LOGS</a>
+                <!-- <a href="/tools/{{ context.orga }}" class="navbtn">TOOLS</a> -->
 
             {% elif session['role'] == 'marketing' %}
-                <a href="/timetable/{{ orga }}" class="navbtn">CALENDAR</a>
-                <a href="/devices/{{ orga }}" class="navbtn">DEVICES</a>
-                <a href="/editTables/{{ orga }}" class="navbtn">TABLES</a>
-                <a href="/editPlaylist/{{ orga }}" class="navbtn">PLAYLISTS</a>
-                <a href="/messages_diffused/{{ orga }}" class="navbtn">LOGS</a>
+                <a href="/timetable/{{ context.orga }}" class="navbtn">CALENDAR</a>
+                <a href="/devices/{{ context.orga }}" class="navbtn">DEVICES</a>
+                <a href="/editTables/{{ context.orga }}" class="navbtn">TABLES</a>
+                <a href="/editPlaylist/{{ context.orga }}" class="navbtn">PLAYLISTS</a>
+                <a href="/messages_diffused/{{ context.orga }}" class="navbtn">LOGS</a>
             
             {% elif session['role'] == 'sales' %}
-                <a href="/timetable/{{ orga }}" class="navbtn">CALENDAR</a>
-                <a href="/editTables/{{ orga }}" class="navbtn">TABLES</a>
-                <a href="/editPlaylist/{{ orga }}" class="navbtn">PLAYLISTS</a>
+                <a href="/timetable/{{ context.orga }}" class="navbtn">CALENDAR</a>
+                <a href="/editTables/{{ context.orga }}" class="navbtn">TABLES</a>
+                <a href="/editPlaylist/{{ context.orga }}" class="navbtn">PLAYLISTS</a>
             {% endif %}
         </div>
 
         <div class="headercenter">
-            <p id="clock">Chargement...</p>
+            <p id="clock">Loading...</p>
         </div>
 
         <div class="headerright">

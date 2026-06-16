@@ -13,8 +13,8 @@
             <label for="password">Password:</label><br>
             <input type="password" id="password" name="password" required><br><br>
 
-            {% if error %}
-                <h3 class="error" id="error">{{ error }}</h3>
+            {% if context.error %}
+                <h3 class="error" id="error">{{ context.error }}</h3>
             {% endif %}
             
             <p> Have troubles connecting ? <a href="/forgotten">Click here</a></p>

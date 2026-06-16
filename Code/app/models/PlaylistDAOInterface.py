@@ -1,7 +1,7 @@
 from app.models.Playlist import Playlist
 
 
-class PlaylistDAOInterface :
+class PlaylistDAOInterface:
 
     def findAll(self) -> list[Playlist]|None:
         """ Get all playlists  """
@@ -27,6 +27,10 @@ class PlaylistDAOInterface :
         """ Create a new playlist with the given name """
         pass
 
+    def deletePlaylist(self, playlist_id: int) -> None:
+        """ Delete a playlist by its ID """
+        pass
+
     ############################
     ## EDIT PLAYLIST FOR DAYS ##
     ############################
@@ -42,9 +46,13 @@ class PlaylistDAOInterface :
     def addPlaylistToDay(self, playlist_id, day_name, start_time) -> None:
         """ Add a playlist to a specific day with a start time """
         pass
-    
+
     def removeAllPlaylistsFromDay(self, day_name) -> None:
         """ Remove all playlists from a specific day """
+        pass
+
+    def deleteObsoletePlaylists(self) -> int:
+        """ Delete playlists that have expired """
         pass
 
     ####################################
@@ -54,4 +62,3 @@ class PlaylistDAOInterface :
     def getRawScheduleForDay(self, day_name: str) -> list:
         """ Retrieve raw schedule data for a specific day """
         pass
-

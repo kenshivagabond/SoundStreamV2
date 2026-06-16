@@ -1,91 +1,31 @@
-from app.models.SongPlayerDAO import SongPlayerDAO
-from app.services.TimeTableService import TimeTableService 
+import threading
 import subprocess
 import time
-import threading
 import datetime
-import platform
 import os
+from concurrent.futures import ThreadPoolExecutor
 from app import app
+from app.models.SongPlayerDAO import SongPlayerDAO
+from app.services.TimeTableService import TimeTableService
+import ping3
 
 ts = TimeTableService()
 
 class SongPlayerService:
 
     _current_playlist = None
-    
-    def __init__(self) :
+
+    def __init__(self):
         self.spdao = SongPlayerDAO()
-    
-   
-    def ping(self,ip):
-        """
-        Checks if a song player is reachable on the network.
-
-            Args:
-                ip (str): The IP address of the song player to ping.
-
-            Returns:
-                bool: True if the player responds, False otherwise.
-        """
-        try :
-            if platform.system() == 'Windows':
-                command = ["ping", "-n", "1", "-w", "1000", ip] # Ping command for Windows with 1 echo request and 1 second timeout (in milliseconds)
-                # Or use : command = ["Test-NetConnection","-ComputerName", ip] #Windows specific ping command (Default timeout is 1 second & 1 echo)
-
-                result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                return result.returncode == 0
-
-            else:  # For Unix/Linux/Mac
-                command = ["ping","-c","1","-w","1",ip] # Ping command for Linux with 1 echo request and 1 second timeout (in seconds)
-
-                result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                return result.returncode == 0
-
-        except subprocess.CalledProcessError:
-            # If subprocess fails, return False
-            return False
-        except Exception:
-            # In case of any other exception, return False
-            return False
-        
-
-    def changeState(self, id_song_player):
-        """
-        Checks the network status of a player and updates its state in the database.
-
-            Args:
-                id_song_player (int): The unique ID of the song player to check.
-        """
-        # Define the two possible states: "ONLINE" and "OFFLINE"
-        state_online = "ONLINE"
-        state_offline = "OFFLINE"
-    
-        # Retrieve the song player associated with the given id from the database
-        song_player = self.spdao.findByID(id_song_player)
-        if song_player:
-            # Get the Ip adress of the song player
-            ip=song_player.IP_adress
-    
-            # Check if the IP is reachable (ping the IP)
-            if self.ping(ip) == False:
-                # If the IP is not reachable, update the player's state to "OFFLINE"
-                self.spdao.UpdateState(state_offline, id_song_player)
-            else:
-                # If the IP is reachable, update the player's state to "ONLINE"
-                self.spdao.UpdateState(state_online, id_song_player)
-        else :
-            return
 
 
-    def deleteSongPlayer(self,id_song_player):
+    def deleteSongPlayer(self, id_song_player):
         """
         Deletes a song player from the system and the database.
 
             Args:
                 id_song_player (int): The unique identifier of the player to be removed.
         """
-
         self.spdao.deleteSongPlayerInDb(id_song_player)
 
 
@@ -96,9 +36,9 @@ class SongPlayerService:
             Returns:
                 List[SongPlayer]: A list containing all song player instances.
         """
-        return  self.findAll()
- 
-                                            
+        return self.findAll()
+
+
     def findAllSongPlayerByOrganisation(self, id_orga):
         """
         Retrieves and synchronizes the status of all players within an organization.
@@ -110,11 +50,12 @@ class SongPlayerService:
                 list[dict]: A list of song players as dictionaries with refreshed network statuses.
         """
         # Fetch initial list of players to identify who needs to be checked
+        self.spdao.findDevices()
         players = self.spdao.findAllByOrganisationInBd(id_orga)
 
         # Update each player's status by pinging their IP address
         for player in players:
-            self.changeState(player.id_player)
+            self.spdao.UpdateState(player.IP_adress)
 
         # Retrieve the updated objects from the database after synchronization
         updated_players = self.spdao.findAllByOrganisationInBd(id_orga)
@@ -123,14 +64,11 @@ class SongPlayerService:
         player_list_dict = []
         for player in updated_players:
             player_list_dict.append(vars(player))
-    
+
         return player_list_dict
-    
-    
-    #def addSongPlayer(self,form):
 
 
-    def countNumberOfSongPlayerOnlineAndOffline(self,id_orga) :
+    def countNumberOfSongPlayerOnlineAndOffline(self, id_orga):
         """
         Counts the number of online and offline song players for a specific organization.
 
@@ -149,7 +87,7 @@ class SongPlayerService:
 
         # Convert objects to dictionaries for compatibility with Jinja2 templates
         liste_song_player_dict = [vars(p) for p in liste_song_player]
-        
+
         # Iterate through the list to count states
         for p in liste_song_player_dict:
             if p['state'] == 'ONLINE':
@@ -158,88 +96,85 @@ class SongPlayerService:
                 nb_off += 1
 
         return (nb_on, nb_off)
-        
 
-    def run_sync(self, ip, device_name):
-            # Configuration des dossiers
-            # On définit des couples (Source_Locale, Dossier_Destination_Distant)
+
+    def run_sync(self, player: dict) -> dict:
+        """Synchronize audio and playlist files to a remote device via rsync."""
+        try:
+            device_name = player.get('name')
+            ip = player.get('ip')
             sync_tasks = [
                 (os.path.join(app.static_folder, 'audio/'), "music/"),
                 (os.path.join(app.static_folder, 'playlists/'), "playlists/")
             ]
-            
-            base_dest_path = f"/home/{device_name}/SoundStreamDevice/"
+            base_dest_path = f"/home/{device_name}"
             for src, subfolder in sync_tasks:
-                full_remote_path = os.path.join(base_dest_path, subfolder)
-                
-                subprocess.run(["ssh", f"{device_name}@{ip}", f"mkdir -p {full_remote_path}"])
-
+                full_remote_path = f"{base_dest_path}/{subfolder}"
                 dest = f"{device_name}@{ip}:{full_remote_path}"
-                cmd = [
-                    "rsync", "-avz", "--delete",
-                    "-e", "ssh",
-                    src, dest
-                ]
-                
+                cmd = ["rsync", "-avz", "--delete", "-e", "ssh", src, dest]
                 try:
                     subprocess.run(cmd, check=True)
+                    print(f"[{device_name}]: Files sent successfully")
                 except Exception as e:
-                    print(f"Erreur synchro {subfolder} vers {ip} : {e}")
-                    
-    def sync_to_device(self, ip, device_name):
-        """ Envoie les fichiers vers la vm Debian distante dans des dossiers séparés """
-
-        threading.Thread(target=self.run_sync, args=(ip, device_name)).start()
-
-    def remote_play_playlist(self, ip, device_name, playlist_name):
-        """ 
-        Commande le MPD distant pour charger et lire une playlist précise 
-        """
-        remote_cmd = f"mpc clear && mpc load {playlist_name} && mpc play"
-        
-        ssh_cmd = ["ssh", f"{device_name}@{ip}", remote_cmd]
-        
-        try:
-            subprocess.run(ssh_cmd, check=True)
-            print(f"Lecture de {playlist_name} lancée sur {ip}")
+                    print(f"[{device_name}]: Sync failed")
         except Exception as e:
-            print(f"Erreur lors de l'envoi du chargement de la playlist : {e}")
+            print(f"Error in run_sync: {e}")
+
+        return player
+
+
+    def multi_thread_rsync(self):
+        """Multi-threaded file synchronization using rsync."""
+        devices = self.spdao.findDevices()
+
+        with ThreadPoolExecutor(max_workers=min(len(devices), 10)) as executor:
+            list(executor.map(self.run_sync, devices))
+
 
     def run_check(self):
-        print("Scheduler démarré...")
+        """Background scheduler loop: checks the current schedule and switches playlists accordingly."""
+        print("Scheduler started...")
         while True:
             now = datetime.datetime.now()
             current_time = now.strftime("%H:%M")
             current_day = now.strftime("%A")
             scheduled_playlist = ts.getPlaylistForTime(current_day, current_time)
-            
+
             if scheduled_playlist and scheduled_playlist != SongPlayerService._current_playlist:
-                
+
                 devices = self.spdao.findAllOnlineDevices()
                 if devices:
 
-                    print(f"Changement de playlist : {scheduled_playlist}")
+                    print(f"Playlist change: {scheduled_playlist}")
                     for dev in devices:
                         self.remote_play_playlist(dev.IP_adress, dev.device_name, scheduled_playlist)
-                    
-                    # On met à jour la variable de classe pour ne pas relancer la même playlist
+
+                    # Update the class variable to avoid restarting the same playlist
                     SongPlayerService._current_playlist = scheduled_playlist
-            
-            # Si aucune playlist n'est prévue dans le planning (trou dans l'emploi du temps)
+
+            # If no playlist is scheduled at this time (gap in the schedule)
             elif not scheduled_playlist and SongPlayerService._current_playlist is not None:
-                print("Aucune playlist n'est programmée actuellement.")
+                print("No playlist is currently scheduled.")
                 SongPlayerService._current_playlist = None
 
             time.sleep(30)
 
     def start_background_scheduler(self):
-
         threading.Thread(target=self.run_check, daemon=True).start()
 
+    def findByID(self, id_player: int):
+        """ Wrapper to get a device by its ID. """
+        return self.spdao.findByID(id_player)
 
-####################################
-## Calendar view & Timetable view ##
-####################################
+    def updateDbSongPlayer(self, form_data: dict, id_player: int) -> None:
+        """ Wrapper to update a device in the database. """
+        self.spdao.updateDbSongPlayer(form_data, id_player)
 
-def trackStartingAt(self, day_name: str, hour: int, minute: int) -> list:
-    """"""
+    def findAllBuildingNames(self) -> list:
+        """ Wrapper to retrieve all building names. """
+        return self.spdao.findAllBuildingNames()
+
+    def createDevice(self, name_place: str, ip_address: str, state: str, place_address: str, place_postcode: str, place_city: str, place_building_name: str, device_name: str, id_orga: int) -> None:
+        """ Wrapper to create a new device in the database. """
+        self.spdao.createDevice(name_place, ip_address, state, place_address, place_postcode, place_city, place_building_name, device_name, id_orga)
+

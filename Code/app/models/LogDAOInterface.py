@@ -1,6 +1,6 @@
-from typing import *
 from datetime import datetime
 from app.models.Log import Log
+
 class LogDAOInterface:
 
     def findAll(self) -> list[Log]:
@@ -9,7 +9,7 @@ class LogDAOInterface:
     def findAllByOrganization(self, org_id: int) -> list[Log]:
         pass
 
-    def createLog(self, type_log: str, text_log: str, date_log: datetime , id_orga: int) -> bool:
+    def createLog(self, type_log: str, text_log: str, date_log: datetime, id_orga: int) -> bool:
         pass
 
     def findAllTickets(self) -> list[Log]:

@@ -19,7 +19,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for message in message_list %}
+                                {% for message in context.message_list %}
                                 <tr>
                                     <td>{{message.text_log}}</td>
                                     <td>{{message.date_log}}</td>
