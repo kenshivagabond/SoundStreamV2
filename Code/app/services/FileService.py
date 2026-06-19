@@ -9,6 +9,7 @@ from mutagen import File as MutagenFile         # External library used to read 
 
 from app import app
 from app.models.FileDAO import FileDAO
+from app.models.File import File
 
 class FileService:
     """
