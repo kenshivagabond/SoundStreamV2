@@ -22,12 +22,20 @@ class SongPlayerDAO(SongPlayerDAOInterface):
 
     def sshForMultiThread(self, player: dict) -> dict:
         """SSH into a device to retrieve its public IP and geolocation (used by findDevices in multi-threaded mode)."""
+        player["has_client"] = False
         try:
             ssh = paramiko.SSHClient()
             ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            ssh.connect(hostname=player["ip"],
-            username=player["name"],
+            ssh.connect(
+            player["ip"], 
             timeout=5)
+            
+            # Check for SoundStream client presence (mpc)
+            # Add common paths (like homebrew) to PATH since non-interactive SSH might not have them
+            stdin, stdout, stderr = ssh.exec_command("PATH=$PATH:/opt/homebrew/bin:/usr/local/bin command -v mpc")
+            if stdout.channel.recv_exit_status() == 0:
+                player["has_client"] = True
+
             stdin, stdout, stderr = ssh.exec_command("curl -s https://api.ipify.org")
             public_ip = stdout.read().decode('utf-8').strip()
 
@@ -53,8 +61,20 @@ class SongPlayerDAO(SongPlayerDAOInterface):
             players = {}
             cmd = subprocess.run(["tailscale", "status", "--json"], capture_output=True, text=True)
             data = json.loads(cmd.stdout)
-            for peer in data['Peer'].values():
-                name = peer['HostName'].split('-')[0]
+            
+            # Add the current machine (Self) to the devices list
+            if 'Self' in data:
+                self_node = data['Self']
+                name_self = self_node['DNSName'].split('.')[0].split('-')[0] if self_node['HostName'].lower() == 'localhost' else self_node['HostName'].split('-')[0]
+                ip_self = self_node['TailscaleIPs'][0]
+                players[name_self] = {"name": name_self, "ip": ip_self, "ville": None, "orga": 1}
+
+            for peer in data.get('Peer', {}).values():
+                # Fix for iOS devices returning 'localhost' as HostName
+                if peer['HostName'].lower() == 'localhost' and 'DNSName' in peer:
+                    name = peer['DNSName'].split('.')[0]
+                else:
+                    name = peer['HostName'].split('-')[0]
                 ip = peer['TailscaleIPs'][0]
 
                 if name not in players:
@@ -62,28 +82,34 @@ class SongPlayerDAO(SongPlayerDAOInterface):
                                      "name": name,
                                      "ip": ip,
                                      "ville": None,
-                                     "orga": None}
+                                     "orga": 1,
+                                     "has_client": False}
 
             with ThreadPoolExecutor(max_workers=len(players)) as executor:
                 updated_players = list(executor.map(self.sshForMultiThread, players.values()))
 
                 query_player = """
-                INSERT OR IGNORE  INTO song_player
-                (name_place, IP_adress, state, last_synchronization, id_orga)
-                VALUES (?,?,"OK",CURRENT_TIMESTAMP,?);"""
-
-                query_loc = """INSERT OR IGNORE INTO localisation (city) VALUES (?);"""
+                INSERT INTO song_player
+                (name_place, IP_adress, state, has_client, last_synchronization, id_orga, place_adress, place_postcode, place_city, device_name)
+                VALUES (?, ?, "OK", ?, CURRENT_TIMESTAMP, ?, 'Inconnue', '00000', ?, ?)
+                ON CONFLICT(IP_adress) DO UPDATE SET
+                    has_client = excluded.has_client,
+                    last_synchronization = excluded.last_synchronization;"""
 
                 for player in updated_players:
+                    ville = player["ville"] if player["ville"] else "Inconnue"
+                    has_client_val = 1 if player.get("has_client") else 0
                     conn.execute(
                         query_player,
                         (
                             player["name"],
                             player["ip"],
+                            has_client_val,
                             player["orga"],
-                        ),
+                            ville,
+                            player["name"]
+                        )
                     )
-                    conn.execute(query_loc, (player["ville"],))
 
             conn.commit()
 
@@ -119,6 +145,17 @@ class SongPlayerDAO(SongPlayerDAOInterface):
             return songplayerList
         return []
 
+    def findAllByOrganisationInBd(self, id_orga) -> list:
+        """ Get all song players by organisation ID """
+        conn = self._getDbConnection()
+        songplayers = conn.execute('SELECT * FROM song_player WHERE id_orga = ? AND has_client = 1;', (id_orga,)).fetchall()
+        songplayerList = list()
+        for songplayer in songplayers:
+            songplayerList.append(SongPlayer(dict(songplayer)))
+        conn.close()
+
+        return songplayerList
+
     def findByState(self, state) -> SongPlayer:
         """ Get song player by state """
         conn = self._getDbConnection()
@@ -138,7 +175,7 @@ class SongPlayerDAO(SongPlayerDAOInterface):
         """ Find all song players by organisation and status """
         conn = self._getDbConnection()
 
-        sql = "SELECT * FROM song_player WHERE id_orga = ? AND state = ?;"
+        sql = "SELECT * FROM song_player WHERE id_orga = ? AND state = ? AND has_client = 1;"
 
         songplayers = conn.execute(sql, (id_orga, status)).fetchall()
 
@@ -179,16 +216,28 @@ class SongPlayerDAO(SongPlayerDAOInterface):
         return building_names
 
     def UpdateState(self, ip) -> None:
-        """ Update player state based on ping result """
+        """ Update player state based on whether mpc is responding """
         conn = self._getDbConnection()
-        if ping(ip) is not None:
-            conn.execute("UPDATE song_player SET state = 'ONLINE' WHERE IP_adress = ?;", (ip,))
+        try:
+            import subprocess
+            cmd = [
+                "ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=1", ip,
+                "PATH=$PATH:/opt/homebrew/bin:/usr/local/bin mpc status"
+            ]
+            result = subprocess.run(cmd, capture_output=True, timeout=2)
+            if result.returncode == 0:
+                conn.execute("UPDATE song_player SET state = 'ONLINE' WHERE IP_adress = ?;", (ip,))
+            else:
+                conn.execute("UPDATE song_player SET state = 'OFFLINE' WHERE IP_adress = ?;", (ip,))
+        except Exception:
+            conn.execute("UPDATE song_player SET state = 'OFFLINE' WHERE IP_adress = ?;", (ip,))
+            
         conn.commit()
         conn.close()
 
     def findAllOnlineDevices(self) -> list[SongPlayer]:
         conn = self._getDbConnection()
-        songplayers = conn.execute("SELECT * FROM song_player WHERE state = 'ONLINE';").fetchall()
+        songplayers = conn.execute("SELECT * FROM song_player WHERE state = 'ONLINE' AND has_client = 1;").fetchall()
         players_online_list = list()
 
         for songplayer in songplayers:

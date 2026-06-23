@@ -14,11 +14,11 @@
         </thead>
 
         <tbody>
-            {% set context.ticket_list = context.los.getTicketLogs() %}
+            {% set ticket_list = context.los.getTicketLogs() %}
             {% set ns = namespace(LineNb=0) %}
 
-            {% if context.ticket_list|length > 0 %}
-                {% for ticket in context.ticket_list %}
+            {% if ticket_list|length > 0 %}
+                {% for ticket in ticket_list %}
                     {% if ns.LineNb < 5 %}
                         {% set ns.LineNb = ns.LineNb + 1 %}
                         <tr>

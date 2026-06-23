@@ -6,6 +6,7 @@ class SQLValue(TypedDict):
     name_place: str
     IP_adress: str
     state: str
+    has_client: bool
     last_synchronization: datetime
     id_orga: int
     
@@ -15,6 +16,7 @@ class SongPlayer :
         self.name_place = dico['name_place']
         self.IP_adress = dico['IP_adress']
         self.state = dico['state']
+        self.has_client = bool(dico.get('has_client', 0))
         self.last_synchronization = dico['last_synchronization']
         self.place_adress = dico['place_adress']
         self.place_postcode = dico['place_postcode']

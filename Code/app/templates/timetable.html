@@ -43,7 +43,7 @@
 
                                 <!-- Monday -->
                                 <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Monday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Monday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">
@@ -66,7 +66,7 @@
 
                                 <!-- Tuesday -->
                                 <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Tuesday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Tuesday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">
@@ -89,7 +89,7 @@
 
                                 <!-- Wednesday -->
                                 <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Wednesday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Wednesday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">
@@ -112,7 +112,7 @@
 
                                 <!-- Thursday -->
                                 <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Thursday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Thursday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">
@@ -135,7 +135,7 @@
 
                                 <!-- Friday -->
                                 <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Friday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Friday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">
@@ -158,7 +158,7 @@
 
                                 <!-- Saturday -->
                                  <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Saturday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Saturday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">
@@ -181,7 +181,7 @@
 
                                 <!-- Sunday -->
                                 <div class="day-column">
-                                    {% set daily_grid = ts.getDayGrid('Sunday') %}
+                                    {% set daily_grid = context.ts.getDayGrid('Sunday') %}
 
                                     {% for i in range(24) %}
                                         <div class="hour-slot" data-hour="{{ i }}">

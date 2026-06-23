@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS song_player(
    name_place TEXT NOT NULL,
    IP_adress TEXT NOT NULL,
    state VARCHAR(50) NOT NULL,
+   has_client BOOLEAN DEFAULT 0,
    last_synchronization DATETIME,
    place_adress TEXT NOT NULL,
    place_postcode  VARCHAR(5) NOT NULL,

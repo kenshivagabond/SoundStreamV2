@@ -98,35 +98,43 @@ class SongPlayerService:
         return (nb_on, nb_off)
 
 
-    def run_sync(self, player: dict) -> dict:
+    def sync_to_device(self, ip: str, device_name: str) -> None:
         """Synchronize audio and playlist files to a remote device via rsync."""
         try:
-            device_name = player.get('name')
-            ip = player.get('ip')
             sync_tasks = [
-                (os.path.join(app.static_folder, 'audio/'), "music/"),
-                (os.path.join(app.static_folder, 'playlists/'), "playlists/")
+                (os.path.join(app.static_folder, 'audio/'), "audio"),
+                (os.path.join(app.static_folder, 'playlists/'), "playlists")
             ]
-            base_dest_path = f"/home/{device_name}"
             for src, subfolder in sync_tasks:
-                full_remote_path = f"{base_dest_path}/{subfolder}"
-                dest = f"{device_name}@{ip}:{full_remote_path}"
-                cmd = ["rsync", "-avz", "--delete", "-e", "ssh", src, dest]
+                dest = f"{ip}:{subfolder}"
+                cmd = ["rsync", "-avz", "--delete", "-e", "ssh -o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=2", src, dest]
                 try:
                     subprocess.run(cmd, check=True)
-                    print(f"[{device_name}]: Files sent successfully")
                 except Exception as e:
-                    print(f"[{device_name}]: Sync failed")
+                    print(f"[{device_name}]: Sync failed for {subfolder}")
+                    
+            # Mettre à jour la base de données MPD après avoir envoyé les fichiers
+            cmd_update = ["ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=2", ip, "PATH=$PATH:/opt/homebrew/bin:/usr/local/bin mpc update --wait"]
+            subprocess.run(cmd_update, check=False)
+            print(f"[{device_name}]: Files sent successfully and MPD updated")
+            
+        except Exception as e:
+            print(f"Error in sync_to_device: {e}")
+
+    def run_sync(self, player) -> dict:
+        """Wrapper to synchronize audio and playlist files to a remote device object via rsync."""
+        try:
+            self.sync_to_device(player.IP_adress, player.device_name)
         except Exception as e:
             print(f"Error in run_sync: {e}")
 
         return player
 
 
-    def multi_thread_rsync(self):
+    def multi_thread_rsync(self, devices):
         """Multi-threaded file synchronization using rsync."""
-        devices = self.spdao.findDevices()
-
+        if not devices:
+            return
         with ThreadPoolExecutor(max_workers=min(len(devices), 10)) as executor:
             list(executor.map(self.run_sync, devices))
 
@@ -146,6 +154,7 @@ class SongPlayerService:
                 if devices:
 
                     print(f"Playlist change: {scheduled_playlist}")
+                    self.multi_thread_rsync(devices)
                     for dev in devices:
                         self.remote_play_playlist(dev.IP_adress, dev.device_name, scheduled_playlist)
 
@@ -161,6 +170,18 @@ class SongPlayerService:
 
     def start_background_scheduler(self):
         threading.Thread(target=self.run_check, daemon=True).start()
+
+    def remote_play_playlist(self, ip: str, device_name: str, playlist_name: str):
+        """Send SSH commands to load and play a playlist on the remote device."""
+        try:
+            cmd = [
+                "ssh", "-o", "BatchMode=yes", "-o", "StrictHostKeyChecking=no", "-o", "ConnectTimeout=2", f"{ip}",
+                f"PATH=$PATH:/opt/homebrew/bin:/usr/local/bin mpc clear && PATH=$PATH:/opt/homebrew/bin:/usr/local/bin mpc load {playlist_name} && PATH=$PATH:/opt/homebrew/bin:/usr/local/bin mpc repeat on && PATH=$PATH:/opt/homebrew/bin:/usr/local/bin mpc play"
+            ]
+            subprocess.run(cmd, check=True)
+            print(f"[{device_name}]: Playing playlist {playlist_name}")
+        except Exception as e:
+            print(f"[{device_name}]: Error playing playlist: {e}")
 
     def findByID(self, id_player: int):
         """ Wrapper to get a device by its ID. """
@@ -178,3 +199,8 @@ class SongPlayerService:
         """ Wrapper to create a new device in the database. """
         self.spdao.createDevice(name_place, ip_address, state, place_address, place_postcode, place_city, place_building_name, device_name, id_orga)
 
+    def changeState(self, id_player: int) -> None:
+        """ Fetch the player by ID and update its online/offline status by pinging its IP. """
+        player = self.spdao.findByID(id_player)
+        if player:
+            self.spdao.UpdateState(player.IP_adress)

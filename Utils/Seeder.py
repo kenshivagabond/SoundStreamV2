@@ -7,16 +7,28 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Build the complete paths
-DB_PATH = os.path.join(BASE_DIR, 'database.db')
+DB_PATH = os.path.join(BASE_DIR, '..', 'Code', 'app', 'static', 'database', 'database.db')
 SCHEMA_PATH = os.path.join(BASE_DIR, 'schema.sql')
 
 # Database Connection
 conn = sqlite3.connect(DB_PATH)
 
-with open(SCHEMA_PATH) as f:
-    conn.executescript(f.read())
-
-
+print("--- Database Wiping ---")
+if input("Reset entire database (Drop all tables)? [True/False]: ").lower() == 'true':
+    with open(SCHEMA_PATH) as f:
+        conn.executescript(f.read())
+    print("✅ Entire database reset.")
+else:
+    if input("Wipe all players? [True/False]: ").lower() == 'true':
+        conn.execute("DELETE FROM song_player")
+        print("✅ Players wiped.")
+    if input("Wipe all logs? [True/False]: ").lower() == 'true':
+        conn.execute("DELETE FROM log")
+        print("✅ Logs wiped.")
+    if input("Wipe all playlists? [True/False]: ").lower() == 'true':
+        conn.execute("DELETE FROM playlist")
+        print("✅ Playlists wiped.")
+    conn.commit()
 ### DEBUG FUNCTION ###
 # /!\ TO DELETE AFTER THE SITE IS BUILT #
 
