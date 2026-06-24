@@ -54,16 +54,18 @@ class SongPlayerService:
         players = self.spdao.findAllByOrganisationInBd(id_orga)
 
         # Update each player's status by pinging their IP address
-        for player in players:
-            self.spdao.UpdateState(player.IP_adress)
+        if players:
+            for player in players:
+                self.spdao.UpdateState(player.IP_adress)
 
         # Retrieve the updated objects from the database after synchronization
         updated_players = self.spdao.findAllByOrganisationInBd(id_orga)
 
         # Convert objects to dictionaries for compatibility with Jinja2 templates
         player_list_dict = []
-        for player in updated_players:
-            player_list_dict.append(vars(player))
+        if updated_players:    
+            for player in updated_players:
+                player_list_dict.append(vars(player))
 
         return player_list_dict
 

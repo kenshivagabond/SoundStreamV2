@@ -48,7 +48,7 @@ class SongPlayerDAO(SongPlayerDAOInterface):
     def findDevices(self) -> None:
         """ Reach any devices through tailscale. """
         conn = self._getDbConnection()
-
+    
         try:
             players = {}
             cmd = subprocess.run(["tailscale", "status", "--json"], capture_output=True, text=True)
@@ -92,8 +92,8 @@ class SongPlayerDAO(SongPlayerDAOInterface):
             raise e
         finally:
             conn.close()
-
-
+        
+     
 
     def findByID(self, id_player) -> SongPlayer:
         """ Get song player by the id of the song player """

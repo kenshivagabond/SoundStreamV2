@@ -6,11 +6,12 @@ from typing import *
 from werkzeug.utils import secure_filename      # Essential security tool to clean filenames (prevents hacking)
 from werkzeug.datastructures import FileStorage # Used only for type hinting (helps IDE auto-completion)
 from mutagen import File as MutagenFile         # External library used to read audio metadata (duration)
-
+from app.tracer import trace_layer
 from app import app
 from app.models.FileDAO import FileDAO
 from app.models.File import File
 
+@trace_layer("FileService")
 class FileService:
     """
     Service responsible for managing audio files.
