@@ -2,9 +2,11 @@ import sqlite3
 from app import app
 from app.models.User import User
 from app.models.UserDAOInterface import UserDAOInterface
+from app.tracer import trace_layer
 
 import bcrypt
 
+@trace_layer("UserDAO")
 class UserDAO(UserDAOInterface) :
     
     def __init__(self) -> None:
