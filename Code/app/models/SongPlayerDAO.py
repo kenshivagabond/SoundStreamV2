@@ -4,10 +4,13 @@ import json
 import paramiko
 from concurrent.futures import ThreadPoolExecutor
 from ping3 import ping
+from app.tracer import trace_layer
 from app import app
 from app.models.SongPlayer import SongPlayer
 from app.models.SongPlayerDAOInterface import SongPlayerDAOInterface
 
+
+@trace_layer("SongPlayerDao")
 class SongPlayerDAO(SongPlayerDAOInterface):
 
     def __init__(self) -> None:
