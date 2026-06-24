@@ -3,7 +3,10 @@ from datetime import datetime
 import sqlite3
 from app.models.LogDAOInterface import LogDAOInterface
 from app.models.Log import Log
+from app.tracer import trace_layer
 
+
+@trace_layer("LogSqliteDAO")
 class LogSqliteDAO(LogDAOInterface):
     """Manages log data in the SQLite3 database for the LogService class."""
 
