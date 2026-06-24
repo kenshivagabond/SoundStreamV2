@@ -2,9 +2,10 @@ from datetime import datetime, timedelta
 from app import app
 from app.models.PlaylistDAO import PlaylistDAO
 from app.models.FileDAO import FileDAO
+from app.tracer import trace_layer
 import os
 
-
+@trace_layer("TimeTableService")
 class TimeTableService:
 
     def __init__(self):

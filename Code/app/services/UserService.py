@@ -1,5 +1,7 @@
 from app.models.UserDAO import UserDAO
+from app.tracer import trace_layer
 
+@trace_layer("UserService")
 class UserService():
 
     def __init__(self):
