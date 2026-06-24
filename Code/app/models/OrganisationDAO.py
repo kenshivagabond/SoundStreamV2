@@ -2,8 +2,10 @@ from app import app
 import sqlite3
 from app.models.OrganisationDAOInterface import OrganisationDAOInterface
 from app.models.Organisation import Organisation
+from app.tracer import trace_layer
 from typing import List
 
+@trace_layer("OrganisationDAO")
 class OrganisationDAO(OrganisationDAOInterface):
     def __init__(self) -> None:
         self.databasename = app.static_folder + '/database/database.db'
