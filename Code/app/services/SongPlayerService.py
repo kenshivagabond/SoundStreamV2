@@ -6,11 +6,14 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from app import app
 from app.models.SongPlayerDAO import SongPlayerDAO
+from app.tracer import trace_layer
 from app.services.TimeTableService import TimeTableService
 import ping3
 
+
 ts = TimeTableService()
 
+@trace_layer("SongPlayerService")
 class SongPlayerService:
 
     _current_playlist = None

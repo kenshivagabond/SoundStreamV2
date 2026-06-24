@@ -1,5 +1,8 @@
+from app.tracer import trace_layer
 from app.models.LogDAO import LogSqliteDAO as LogDAO
 
+
+@trace_layer("LogService")
 class LogService:
     """Processes and formats log data for the LogController."""
 

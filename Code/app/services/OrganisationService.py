@@ -1,5 +1,7 @@
 from app.models.OrganisationDAO import OrganisationDAO
+from app.tracer import trace_layer
 
+@trace_layer("LogService")
 class OrganisationService:
 
     def __init__(self):
