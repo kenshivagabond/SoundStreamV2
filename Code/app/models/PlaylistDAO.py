@@ -3,8 +3,10 @@ import sqlite3
 from app import app
 from app.models.Playlist import Playlist
 from app.models.PlaylistDAOInterface import PlaylistDAOInterface
+from app.tracer import trace_layer
 import os
 
+@trace_layer("PlaylistDAO")
 class PlaylistDAO(PlaylistDAOInterface):
 
     def __init__(self) -> None:
