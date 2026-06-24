@@ -4,8 +4,9 @@ from datetime import datetime
 import sqlite3
 from app.models.FileDAOInterface import FileDAOInterface
 from app.models.File import File
+from app.tracer import trace_layer
 
-
+@trace_layer("FileDao")
 class FileDAO(FileDAOInterface):
 
     def __init__(self) -> None:
